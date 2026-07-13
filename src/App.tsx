@@ -1,10 +1,7 @@
-import { FormEvent, ReactNode, useMemo, useState } from 'react';
-import {
-  BaziChart,
-  BirthInput,
-  ChartComparison,
-  compareCivilAndTrueSolar,
-} from './lib/bazi';
+import { useMemo, useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+import { compareCivilAndTrueSolar } from './lib/bazi';
+import type { BaziChart, BirthInput, ChartComparison } from './lib/bazi';
 import { correctionLabel } from './lib/solar-time';
 
 const DEFAULT_INPUT: BirthInput = {
