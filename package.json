@@ -1,0 +1,25 @@
+{
+  "name": "mingjing-bazi-chart",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "6.0.3",
+    "lunar-javascript": "1.7.7",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "vite": "8.1.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}
