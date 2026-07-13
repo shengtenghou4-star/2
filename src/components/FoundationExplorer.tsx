@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { BaziChart } from '../lib/bazi';
 import { buildLuckContext } from '../lib/context';
 import type { TemporalPillar } from '../lib/timeline';
+import { DynamicsExplorer } from './DynamicsExplorer';
 import { EvidenceExplorer } from './EvidenceExplorer';
 
 function TemporalCard({ pillar }: { pillar: TemporalPillar }) {
@@ -112,8 +113,9 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
       </div>
 
       <EvidenceExplorer chart={chart} context={context} />
+      <DynamicsExplorer chart={chart} context={context} />
 
-      <p className="foundation-boundary">本层仍不判断“合而化”“冲而动”“克而有力”或“神煞吉凶”。月令与根气已经进入证据层，但最终旺衰必须等透干层级、邻接、合绊、通关与制化裁决完整后再判。</p>
+      <p className="foundation-boundary">月令、根气、透藏和作用路径已经进入证据层，但最终旺衰仍须等待距离折减、争合优先级、重复引动和力量裁决完成后再判。</p>
     </section>
   );
 }
