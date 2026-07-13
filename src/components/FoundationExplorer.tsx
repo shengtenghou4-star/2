@@ -4,6 +4,7 @@ import { buildLuckContext } from '../lib/context';
 import type { TemporalPillar } from '../lib/timeline';
 import { DynamicsExplorer } from './DynamicsExplorer';
 import { EvidenceExplorer } from './EvidenceExplorer';
+import { StrengthExplorer } from './StrengthExplorer';
 
 function TemporalCard({ pillar }: { pillar: TemporalPillar }) {
   return (
@@ -64,7 +65,7 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
 
   return (
     <section className="panel foundation-panel">
-      <div className="section-heading compact"><span>04</span><div><h2>岁运基础作用台</h2><p>原局＋大运＋流年＋流月同时入场；只列事实，不做旺衰和吉凶裁决</p></div></div>
+      <div className="section-heading compact"><span>04</span><div><h2>岁运基础作用台</h2><p>原局＋大运＋流年＋流月同时入场；事实、候选和裁决分层保存</p></div></div>
 
       <div className="timeline-selectors">
         <label><span>大运</span><select value={cycleIndex} onChange={(event) => changeCycle(Number(event.target.value))}>
@@ -114,8 +115,9 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
 
       <EvidenceExplorer chart={chart} context={context} />
       <DynamicsExplorer chart={chart} context={context} />
+      <StrengthExplorer chart={chart} context={context} />
 
-      <p className="foundation-boundary">月令、根气、透藏和作用路径已经进入证据层，但最终旺衰仍须等待距离折减、争合优先级、重复引动和力量裁决完成后再判。</p>
+      <p className="foundation-boundary">当前已经允许输出“旺衰候选”，但仍不等于格局、喜忌或用神结论。候选必须同时携带证据账、反证、阻断条件、原局—岁运差异和置信度。</p>
     </section>
   );
 }
