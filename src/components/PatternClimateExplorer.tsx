@@ -3,8 +3,8 @@ import type { BaziChart } from '../lib/bazi';
 import type { LuckContext } from '../lib/context';
 import { buildDynamicsSnapshot } from '../lib/dynamics';
 import { buildEvidenceSnapshot } from '../lib/evidence';
-import { buildInterpretationAssessment, type InterpretationCondition } from '../lib/interpretation';
-import { buildStrengthAdjudication } from '../lib/strength';
+import { buildInterpretationAssessment, type InterpretationCondition } from '../lib/interpretation-audited';
+import { buildStrengthAdjudication } from '../lib/strength-audited';
 
 function Conditions({ items }: { items: InterpretationCondition[] }) {
   return (
@@ -138,7 +138,7 @@ export function PatternClimateExplorer({ chart, context }: { chart: BaziChart; c
                   <p><strong>原局</strong><em>{need.natal.status}</em><small>{need.natal.sources.join('、') || '没有可见来源'}</small></p>
                   <p><strong>当前岁运</strong><em>{need.current.status}</em><small>{need.current.sources.join('、') || '没有可见来源'}</small></p>
                 </div>
-                {need.temporalAdded && <i>岁运新增{need.element}材料</i>}
+                {need.temporalAdded && <i>岁运补入／加强{need.element}材料</i>}
                 <small>{need.note}</small>
               </article>
             )) : <p className="foundation-empty">当前月支不预设单一气候元素；需要继续结合日干和节气深浅。</p>}

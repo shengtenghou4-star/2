@@ -5,7 +5,7 @@ import {
   type BaziChart,
   type BirthInput,
   type ChartComparison,
-} from './lib/bazi';
+} from './lib/bazi-audited';
 import { correctionLabel } from './lib/solar-time';
 
 const DEFAULT_INPUT: BirthInput = {
@@ -171,7 +171,7 @@ function App() {
             <div className="field-grid two"><Field label="经度（东正西负）"><input type="number" step="0.0001" value={form.longitude} onChange={(event) => update('longitude', Number(event.target.value))} /></Field><Field label="纬度（北正南负）"><input type="number" step="0.0001" value={form.latitude} onChange={(event) => update('latitude', Number(event.target.value))} /></Field></div>
             <div className="field-grid two"><Field label="标准 UTC 时差"><input type="number" step="0.5" value={form.utcOffset} onChange={(event) => update('utcOffset', Number(event.target.value))} /></Field><Field label="当时夏令时（分钟）"><input type="number" step="30" value={form.dstMinutes} onChange={(event) => update('dstMinutes', Number(event.target.value))} /></Field></div>
             <Field label="默认展示口径"><select value={form.timeBasis} onChange={(event) => update('timeBasis', event.target.value as BirthInput['timeBasis'])}><option value="true-solar">真太阳时</option><option value="civil">民用标准时间</option></select></Field>
-            <div className="scope-note"><strong>底层口径</strong><p>农历输入先确定对应民用公历时刻，再做夏令时、经度和均时差修正。闰月不存在时系统会拒绝排盘。</p></div>
+            <div className="scope-note"><strong>底层口径</strong><p>农历输入先确定对应民用公历时刻，再做夏令时、经度和均时差修正。闰月或日期不存在时，系统通过回读核验拒绝静默归一化。</p></div>
             {error && <p className="error">{error}</p>}
             <button className="primary" type="submit">生成基础全盘 <span>→</span></button>
           </form>
