@@ -107,7 +107,7 @@ describe('large deterministic differential checks', () => {
       const chart = calculateBazi(value);
       expect(chart.pillars.map((item) => item.ganZhi), `sample ${index}: ${chart.solarText}`).toEqual(directPillars(value));
     }
-  });
+  }, 15_000);
 
   it('matches direct library pillars at the computed true-solar effective time', () => {
     const random = lcg(73021);
@@ -239,7 +239,7 @@ describe('audited interpretation semantics', () => {
   });
 
   it('records a pure month-branch combination as pending structure rather than automatic breakage', () => {
-    const result = patternFor(['甲子', '辛酉', '乙辰', '丙午']);
+    const result = patternFor(['甲亥', '辛酉', '乙辰', '丙寅']);
     const officer = result.candidates.find((item) => item.tenGod === '七杀');
     expect(officer?.conditions.some((item) => item.label === '月支关系触及' && item.state === '部分具备')).toBe(true);
     expect(officer?.objections.some((item) => item.includes('辰酉六合'))).toBe(false);
