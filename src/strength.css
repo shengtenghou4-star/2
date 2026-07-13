@@ -1,0 +1,66 @@
+.strength-explorer { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(200,165,106,.28); }
+.strength-verdict-grid { display: grid; grid-template-columns: 1fr 1fr .72fr; gap: 9px; }
+.strength-verdict-card, .strength-delta { border: 1px solid var(--line); background: rgba(0,0,0,.13); padding: 13px; min-width: 0; }
+.strength-verdict-card > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.strength-verdict-card > header > span, .strength-delta > span { color: var(--gold); font-size: 8px; letter-spacing: .08em; }
+.strength-confidence { font-style: normal; border: 1px solid var(--line); padding: 3px 5px; font-size: 7px; }
+.confidence-high { color: #a8c49d; border-color: rgba(168,196,157,.32); }
+.confidence-medium { color: var(--gold-soft); border-color: rgba(200,165,106,.32); }
+.confidence-low { color: #d39b84; border-color: rgba(211,155,132,.32); }
+.strength-verdict-card > strong { display: block; margin-top: 12px; color: #ead8b8; font-family: "Noto Serif SC", serif; font-size: 25px; font-weight: 600; }
+.strength-verdict-card > p { color: var(--muted); font-size: 8px; margin: 5px 0 9px; }
+.strength-verdict-card > small { display: block; color: var(--muted); font-size: 8px; line-height: 1.5; margin-top: 8px; }
+.strength-balance { display: flex; height: 24px; background: #10100d; border: 1px solid var(--line); overflow: hidden; }
+.strength-balance i, .strength-balance b { position: relative; display: block; min-width: 0; font-style: normal; font-weight: 400; }
+.strength-balance i { background: linear-gradient(90deg, rgba(154,181,139,.36), rgba(154,181,139,.16)); border-right: 1px solid rgba(255,255,255,.08); }
+.strength-balance b { flex: 1; background: linear-gradient(90deg, rgba(190,119,95,.14), rgba(190,119,95,.32)); }
+.strength-balance span { position: absolute; white-space: nowrap; top: 6px; left: 7px; color: #d7cebd; font-size: 7px; }
+.strength-balance b span { left: auto; right: 7px; }
+.strength-delta { display: grid; align-content: start; gap: 8px; border-left: 2px solid var(--gold); }
+.strength-delta > b { color: var(--gold-soft); font-family: "Noto Serif SC", serif; font-size: 18px; }
+.strength-delta > p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.6; }
+.hypothesis-panel { margin-top: 11px; border: 1px solid var(--line); padding: 13px; background: rgba(0,0,0,.09); }
+.hypothesis-list { display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.hypothesis-list article { border: 1px solid var(--line); background: #171510; padding: 9px; min-width: 120px; }
+.hypothesis-list article.is-leading { border-color: rgba(200,165,106,.55); box-shadow: inset 0 2px rgba(200,165,106,.8); background: rgba(200,165,106,.07); }
+.hypothesis-list header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 5px; }
+.hypothesis-list header span { color: var(--muted); font-size: 7px; }
+.hypothesis-list header b { color: #ddd2bf; font-family: "Noto Serif SC", serif; font-size: 12px; }
+.hypothesis-list header em { color: var(--gold); font-size: 9px; font-style: normal; }
+.hypothesis-fit { height: 3px; background: #0e0d0a; margin: 8px 0; }
+.hypothesis-fit i { display: block; height: 100%; background: var(--gold); opacity: .72; }
+.hypothesis-list p, .hypothesis-list small { display: block; color: var(--muted); font-size: 7px; line-height: 1.5; margin: 0; }
+.hypothesis-list small { margin-top: 5px; color: #ab9f8d; }
+.hypothesis-list .hypothesis-blocker { color: #d39b84; }
+.strength-evidence-grid, .strength-lower-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 11px; }
+.strength-evidence-column, .strength-unresolved { border: 1px solid var(--line); padding: 13px; background: rgba(0,0,0,.09); min-width: 0; }
+.strength-evidence-list { display: grid; gap: 6px; max-height: 620px; overflow: auto; padding-right: 2px; }
+.strength-evidence-list article { position: relative; border: 1px solid var(--line); background: #171510; padding: 9px; }
+.strength-evidence-list article.is-contested { border-left: 2px solid #d39b84; }
+.strength-evidence-list header { display: grid; grid-template-columns: 55px 1fr auto; gap: 6px; align-items: center; }
+.strength-evidence-list header span { color: var(--gold); font-size: 7px; }
+.strength-evidence-list header b { color: #d8cebd; font-size: 9px; font-weight: 500; }
+.strength-evidence-list header em { color: var(--gold-soft); font-size: 10px; font-style: normal; }
+.strength-evidence-list p { color: #9d9486; font-size: 7px; margin: 6px 0 4px; }
+.strength-evidence-list small { display: block; color: var(--muted); font-size: 7px; line-height: 1.5; }
+.strength-evidence-list code { display: inline-block; color: #625d53; font-size: 6px; margin-top: 5px; }
+.axis-扶身 { box-shadow: inset 0 2px rgba(140,175,127,.25); }
+.axis-耗泄克身 { box-shadow: inset 0 2px rgba(211,155,132,.24); }
+.axis-不确定 { box-shadow: inset 0 2px rgba(142,155,164,.24); }
+.strength-unresolved > div:last-child { display: grid; gap: 5px; max-height: 620px; overflow: auto; }
+.strength-unresolved p:not(.foundation-empty) { display: grid; grid-template-columns: 25px 1fr; gap: 7px; align-items: start; margin: 0; border: 1px solid var(--line); background: #171510; padding: 8px; }
+.strength-unresolved p b { color: var(--gold); font-size: 7px; }
+.strength-unresolved p span { color: var(--muted); font-size: 8px; line-height: 1.5; }
+.strength-notes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.strength-notes p { margin: 0; border-left: 2px solid rgba(200,165,106,.5); background: rgba(0,0,0,.12); color: var(--muted); padding: 8px 9px; font-size: 8px; line-height: 1.5; }
+
+@media (max-width: 1100px) {
+  .strength-verdict-grid { grid-template-columns: 1fr 1fr; }
+  .strength-delta { grid-column: 1 / -1; }
+  .strength-notes { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .strength-verdict-grid, .strength-evidence-grid, .strength-lower-grid { grid-template-columns: 1fr; }
+  .hypothesis-list { grid-template-columns: repeat(7, minmax(145px, 1fr)); }
+  .strength-notes { grid-template-columns: 1fr; }
+}
