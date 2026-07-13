@@ -51,6 +51,22 @@ export const HIDDEN_STEMS: Record<string, HiddenStemBase[]> = {
 const GENERATES: Record<Element, Element> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
 const CONTROLS: Record<Element, Element> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' };
 
+export function generatedElement(element: Element): Element {
+  return GENERATES[element];
+}
+
+export function controlledElement(element: Element): Element {
+  return CONTROLS[element];
+}
+
+export function generatorElement(element: Element): Element {
+  return (Object.entries(GENERATES).find(([, target]) => target === element)?.[0] ?? element) as Element;
+}
+
+export function controllerElement(element: Element): Element {
+  return (Object.entries(CONTROLS).find(([, target]) => target === element)?.[0] ?? element) as Element;
+}
+
 export function elementRelation(sourceElement: Element, targetElement: Element): ElementRelation {
   if (sourceElement === targetElement) {
     return { type: '同类', sourceElement, targetElement, sourceAction: '同类', targetAction: '同类' };
