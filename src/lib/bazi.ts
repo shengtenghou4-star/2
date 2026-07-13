@@ -1,7 +1,10 @@
 import { Solar } from 'lunar-javascript';
+import { calculateTimeCorrection, effectiveBirthInput, type TimeCorrection } from './solar-time';
+import { detectRelations, type ChartRelation } from './relations';
 
 export type Gender = 'male' | 'female';
 export type DayBoundary = 'midnight' | 'late-zi';
+export type TimeBasis = 'civil' | 'true-solar';
 
 export interface BirthInput {
   year: number;
@@ -12,6 +15,12 @@ export interface BirthInput {
   second?: number;
   gender: Gender;
   dayBoundary: DayBoundary;
+  timeBasis: TimeBasis;
+  locationName: string;
+  longitude: number;
+  latitude: number;
+  utcOffset: number;
+  dstMinutes: number;
 }
 
 export interface HiddenStem {
@@ -54,11 +63,14 @@ export interface LuckCycle {
 
 export interface BaziChart {
   input: BirthInput;
+  effectiveInput: BirthInput;
+  timeCorrection: TimeCorrection;
   solarText: string;
   lunarText: string;
   zodiac: string;
   dayMaster: string;
   pillars: PillarDetail[];
+  relations: ChartRelation[];
   prevJie: { name: string; datetime: string };
   nextJie: { name: string; datetime: string };
   prevQi: { name: string; datetime: string };
@@ -75,6 +87,19 @@ export interface BaziChart {
     startSolar: string;
     cycles: LuckCycle[];
   };
+}
+
+export interface PillarDifference {
+  label: PillarDetail['label'];
+  civil: string;
+  trueSolar: string;
+}
+
+export interface ChartComparison {
+  civil: BaziChart;
+  trueSolar: BaziChart;
+  differences: PillarDifference[];
+  hasDifference: boolean;
 }
 
 const STEM_ELEMENTS: Record<string, string> = {
@@ -126,19 +151,28 @@ function nearTerm(term: any) {
 export function calculateBazi(input: BirthInput): BaziChart {
   validateBirthInput(input);
 
+  const effective = effectiveBirthInput(input);
+  const timeCorrection = calculateTimeCorrection(input);
   const solar = Solar.fromYmdHms(
-    input.year,
-    input.month,
-    input.day,
-    input.hour,
-    input.minute,
-    input.second ?? 0,
+    effective.year,
+    effective.month,
+    effective.day,
+    effective.hour,
+    effective.minute,
+    effective.second ?? 0,
   );
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
 
   // lunar-javascript: sect 1 = 23:00 后按次日；sect 2 = 晚子时仍属当日。
   eightChar.setSect(input.dayBoundary === 'late-zi' ? 1 : 2);
+
+  const pillars = [
+    buildPillar(eightChar, 'Year', '年柱'),
+    buildPillar(eightChar, 'Month', '月柱'),
+    buildPillar(eightChar, 'Day', '日柱'),
+    buildPillar(eightChar, 'Time', '时柱'),
+  ];
 
   const yun = eightChar.getYun(input.gender === 'male' ? 1 : 0);
   const cycles = (yun.getDaYun(10) as any[])
@@ -161,16 +195,14 @@ export function calculateBazi(input: BirthInput): BaziChart {
 
   return {
     input,
+    effectiveInput: effective,
+    timeCorrection,
     solarText: solar.toYmdHms(),
     lunarText: `${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}月${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时`,
     zodiac: lunar.getYearShengXiaoExact(),
     dayMaster: eightChar.getDayGan(),
-    pillars: [
-      buildPillar(eightChar, 'Year', '年柱'),
-      buildPillar(eightChar, 'Month', '月柱'),
-      buildPillar(eightChar, 'Day', '日柱'),
-      buildPillar(eightChar, 'Time', '时柱'),
-    ],
+    pillars,
+    relations: detectRelations(pillars),
     prevJie: nearTerm(lunar.getPrevJie()),
     nextJie: nearTerm(lunar.getNextJie()),
     prevQi: nearTerm(lunar.getPrevQi()),
@@ -190,6 +222,24 @@ export function calculateBazi(input: BirthInput): BaziChart {
   };
 }
 
+export function compareCivilAndTrueSolar(input: BirthInput): ChartComparison {
+  const civil = calculateBazi({ ...input, timeBasis: 'civil' });
+  const trueSolar = calculateBazi({ ...input, timeBasis: 'true-solar' });
+  const differences = civil.pillars.flatMap((pillar, index) => {
+    const corrected = trueSolar.pillars[index];
+    return pillar.ganZhi === corrected.ganZhi
+      ? []
+      : [{ label: pillar.label, civil: pillar.ganZhi, trueSolar: corrected.ganZhi }];
+  });
+
+  return {
+    civil,
+    trueSolar,
+    differences,
+    hasDifference: differences.length > 0,
+  };
+}
+
 export function validateBirthInput(input: BirthInput): void {
   if (!Number.isInteger(input.year) || input.year < 1900 || input.year > 2100) {
     throw new Error('年份目前支持 1900—2100。');
@@ -205,6 +255,18 @@ export function validateBirthInput(input: BirthInput): void {
   }
   if (!Number.isInteger(input.minute) || input.minute < 0 || input.minute > 59) {
     throw new Error('分钟必须在 0—59 之间。');
+  }
+  if (!Number.isFinite(input.longitude) || input.longitude < -180 || input.longitude > 180) {
+    throw new Error('经度必须在 -180—180 之间，东经为正。');
+  }
+  if (!Number.isFinite(input.latitude) || input.latitude < -90 || input.latitude > 90) {
+    throw new Error('纬度必须在 -90—90 之间，北纬为正。');
+  }
+  if (!Number.isFinite(input.utcOffset) || input.utcOffset < -14 || input.utcOffset > 14) {
+    throw new Error('UTC时差必须在 -14—14 之间。');
+  }
+  if (!Number.isFinite(input.dstMinutes) || input.dstMinutes < -120 || input.dstMinutes > 180) {
+    throw new Error('夏令时修正必须在 -120—180 分钟之间。');
   }
 
   const probe = new Date(Date.UTC(input.year, input.month - 1, input.day));
