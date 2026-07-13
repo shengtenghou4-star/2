@@ -4,6 +4,7 @@ import { buildLuckContext } from '../lib/context';
 import type { TemporalPillar } from '../lib/timeline';
 import { DynamicsExplorer } from './DynamicsExplorer';
 import { EvidenceExplorer } from './EvidenceExplorer';
+import { PatternClimateExplorer } from './PatternClimateExplorer';
 import { StrengthExplorer } from './StrengthExplorer';
 
 function TemporalCard({ pillar }: { pillar: TemporalPillar }) {
@@ -116,8 +117,9 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
       <EvidenceExplorer chart={chart} context={context} />
       <DynamicsExplorer chart={chart} context={context} />
       <StrengthExplorer chart={chart} context={context} />
+      <PatternClimateExplorer chart={chart} context={context} />
 
-      <p className="foundation-boundary">当前已经允许输出“旺衰候选”，但仍不等于格局、喜忌或用神结论。候选必须同时携带证据账、反证、阻断条件、原局—岁运差异和置信度。</p>
+      <p className="foundation-boundary">格局、调候和扶抑现已分轨输出。当前仍只允许候选与冲突审计，不输出最终用神、喜忌或现实事件断语。</p>
     </section>
   );
 }
