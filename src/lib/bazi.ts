@@ -1,12 +1,17 @@
-import { Solar } from 'lunar-javascript';
+import { Lunar, Solar } from 'lunar-javascript';
 import { calculateTimeCorrection, effectiveBirthInput, type TimeCorrection } from './solar-time';
-import { detectRelations, type ChartRelation } from './relations';
+import { buildElementInteractions, detectRelations, type ChartRelation, type ElementInteraction } from './relations';
+import { buildTemporalPillar, type FlowMonth, type TemporalPillar } from './timeline';
 
 export type Gender = 'male' | 'female';
 export type DayBoundary = 'midnight' | 'late-zi';
 export type TimeBasis = 'civil' | 'true-solar';
+export type CalendarType = 'solar' | 'lunar';
+export type NatalPillarLabel = '年柱' | '月柱' | '日柱' | '时柱';
 
 export interface BirthInput {
+  calendarType: CalendarType;
+  leapMonth: boolean;
   year: number;
   month: number;
   day: number;
@@ -23,31 +28,19 @@ export interface BirthInput {
   dstMinutes: number;
 }
 
-export interface HiddenStem {
-  stem: string;
-  tenGod: string;
+export interface PillarDetail extends TemporalPillar {
+  label: NatalPillarLabel;
+  layer: '原局';
 }
 
-export interface PillarDetail {
-  label: '年柱' | '月柱' | '日柱' | '时柱';
-  ganZhi: string;
-  stem: string;
-  branch: string;
-  stemElement: string;
-  branchElement: string;
-  tenGod: string;
-  hiddenStems: HiddenStem[];
-  naYin: string;
-  growthStage: string;
-  xun: string;
-  xunKong: string;
-}
+export interface LuckMonth extends FlowMonth {}
 
 export interface LuckYear {
   year: number;
   age: number;
   ganZhi: string;
   xunKong: string;
+  pillar: TemporalPillar;
 }
 
 export interface LuckCycle {
@@ -58,11 +51,13 @@ export interface LuckCycle {
   startAge: number;
   endAge: number;
   xunKong: string;
+  pillar: TemporalPillar;
   years: LuckYear[];
 }
 
 export interface BaziChart {
   input: BirthInput;
+  civilSolarInput: BirthInput;
   effectiveInput: BirthInput;
   timeCorrection: TimeCorrection;
   solarText: string;
@@ -71,6 +66,7 @@ export interface BaziChart {
   dayMaster: string;
   pillars: PillarDetail[];
   relations: ChartRelation[];
+  elementInteractions: ElementInteraction[];
   prevJie: { name: string; datetime: string };
   nextJie: { name: string; datetime: string };
   prevQi: { name: string; datetime: string };
@@ -90,7 +86,7 @@ export interface BaziChart {
 }
 
 export interface PillarDifference {
-  label: PillarDetail['label'];
+  label: NatalPillarLabel;
   civil: string;
   trueSolar: string;
 }
@@ -102,45 +98,6 @@ export interface ChartComparison {
   hasDifference: boolean;
 }
 
-const STEM_ELEMENTS: Record<string, string> = {
-  甲: '木', 乙: '木', 丙: '火', 丁: '火', 戊: '土',
-  己: '土', 庚: '金', 辛: '金', 壬: '水', 癸: '水',
-};
-
-const BRANCH_ELEMENTS: Record<string, string> = {
-  子: '水', 丑: '土', 寅: '木', 卯: '木', 辰: '土', 巳: '火',
-  午: '火', 未: '土', 申: '金', 酉: '金', 戌: '土', 亥: '水',
-};
-
-function splitWuXing(value: string): [string, string] {
-  const chars = [...value];
-  return [chars[0] ?? '', chars[1] ?? ''];
-}
-
-function buildPillar(eightChar: any, prefix: 'Year' | 'Month' | 'Day' | 'Time', label: PillarDetail['label']): PillarDetail {
-  const ganZhi = eightChar[`get${prefix}`]();
-  const stem = eightChar[`get${prefix}Gan`]();
-  const branch = eightChar[`get${prefix}Zhi`]();
-  const hidden = eightChar[`get${prefix}HideGan`]() as string[];
-  const hiddenGods = eightChar[`get${prefix}ShiShenZhi`]() as string[];
-  const [stemElementFromLibrary, branchElementFromLibrary] = splitWuXing(eightChar[`get${prefix}WuXing`]());
-
-  return {
-    label,
-    ganZhi,
-    stem,
-    branch,
-    stemElement: STEM_ELEMENTS[stem] ?? stemElementFromLibrary,
-    branchElement: BRANCH_ELEMENTS[branch] ?? branchElementFromLibrary,
-    tenGod: prefix === 'Day' ? '日主' : eightChar[`get${prefix}ShiShenGan`](),
-    hiddenStems: hidden.map((item, index) => ({ stem: item, tenGod: hiddenGods[index] ?? '' })),
-    naYin: eightChar[`get${prefix}NaYin`](),
-    growthStage: eightChar[`get${prefix}DiShi`](),
-    xun: eightChar[`get${prefix}Xun`](),
-    xunKong: eightChar[`get${prefix}XunKong`](),
-  };
-}
-
 function nearTerm(term: any) {
   return {
     name: term.getName(),
@@ -148,11 +105,36 @@ function nearTerm(term: any) {
   };
 }
 
+function normalizeCalendarInput(input: BirthInput): BirthInput {
+  if (input.calendarType === 'solar') return { ...input, leapMonth: false };
+  const lunarMonth = input.leapMonth ? -input.month : input.month;
+  const solar = Lunar.fromYmdHms(
+    input.year,
+    lunarMonth,
+    input.day,
+    input.hour,
+    input.minute,
+    input.second ?? 0,
+  ).getSolar();
+  return {
+    ...input,
+    calendarType: 'solar',
+    leapMonth: false,
+    year: solar.getYear(),
+    month: solar.getMonth(),
+    day: solar.getDay(),
+    hour: solar.getHour(),
+    minute: solar.getMinute(),
+    second: solar.getSecond(),
+  };
+}
+
 export function calculateBazi(input: BirthInput): BaziChart {
   validateBirthInput(input);
 
-  const effective = effectiveBirthInput(input);
-  const timeCorrection = calculateTimeCorrection(input);
+  const civilSolarInput = normalizeCalendarInput(input);
+  const effective = effectiveBirthInput(civilSolarInput);
+  const timeCorrection = calculateTimeCorrection(civilSolarInput);
   const solar = Solar.fromYmdHms(
     effective.year,
     effective.month,
@@ -163,46 +145,83 @@ export function calculateBazi(input: BirthInput): BaziChart {
   );
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
-
-  // lunar-javascript: sect 1 = 23:00 后按次日；sect 2 = 晚子时仍属当日。
   eightChar.setSect(input.dayBoundary === 'late-zi' ? 1 : 2);
 
-  const pillars = [
-    buildPillar(eightChar, 'Year', '年柱'),
-    buildPillar(eightChar, 'Month', '月柱'),
-    buildPillar(eightChar, 'Day', '日柱'),
-    buildPillar(eightChar, 'Time', '时柱'),
+  const rawPillars: Array<{ label: NatalPillarLabel; ganZhi: string }> = [
+    { label: '年柱', ganZhi: eightChar.getYear() },
+    { label: '月柱', ganZhi: eightChar.getMonth() },
+    { label: '日柱', ganZhi: eightChar.getDay() },
+    { label: '时柱', ganZhi: eightChar.getTime() },
   ];
+  const references = {
+    dayStem: rawPillars[2].ganZhi[0],
+    yearBranch: rawPillars[0].ganZhi[1],
+    dayBranch: rawPillars[2].ganZhi[1],
+  };
+  const pillars = rawPillars.map((item, index) => {
+    const pillar = buildTemporalPillar(
+      `natal-${index}`,
+      item.label,
+      '原局',
+      item.ganZhi,
+      references,
+    ) as PillarDetail;
+    if (item.label === '日柱') pillar.tenGod = '日主';
+    return pillar;
+  });
 
   const yun = eightChar.getYun(input.gender === 'male' ? 1 : 0);
   const cycles = (yun.getDaYun(10) as any[])
     .filter((cycle) => cycle.getIndex() > 0)
-    .map((cycle) => ({
-      index: cycle.getIndex(),
-      ganZhi: cycle.getGanZhi(),
-      startYear: cycle.getStartYear(),
-      endYear: cycle.getEndYear(),
-      startAge: cycle.getStartAge(),
-      endAge: cycle.getEndAge(),
-      xunKong: cycle.getXunKong(),
-      years: (cycle.getLiuNian() as any[]).map((year) => ({
-        year: year.getYear(),
-        age: year.getAge(),
-        ganZhi: year.getGanZhi(),
-        xunKong: year.getXunKong(),
-      })),
-    }));
+    .map((cycle) => {
+      const cyclePillar = buildTemporalPillar(
+        `dayun-${cycle.getIndex()}`,
+        `${cycle.getStartAge()}—${cycle.getEndAge()}岁大运`,
+        '大运',
+        cycle.getGanZhi(),
+        references,
+      );
+      const years = (cycle.getLiuNian() as any[]).map((year) => {
+        const yearPillar = buildTemporalPillar(
+          `liunian-${year.getYear()}`,
+          `${year.getYear()}流年`,
+          '流年',
+          year.getGanZhi(),
+          references,
+        );
+        return {
+          year: year.getYear(),
+          age: year.getAge(),
+          ganZhi: year.getGanZhi(),
+          xunKong: year.getXunKong(),
+          pillar: yearPillar,
+        };
+      });
+      return {
+        index: cycle.getIndex(),
+        ganZhi: cycle.getGanZhi(),
+        startYear: cycle.getStartYear(),
+        endYear: cycle.getEndYear(),
+        startAge: cycle.getStartAge(),
+        endAge: cycle.getEndAge(),
+        xunKong: cycle.getXunKong(),
+        pillar: cyclePillar,
+        years,
+      };
+    });
 
   return {
     input,
+    civilSolarInput,
     effectiveInput: effective,
     timeCorrection,
     solarText: solar.toYmdHms(),
     lunarText: `${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}月${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时`,
     zodiac: lunar.getYearShengXiaoExact(),
-    dayMaster: eightChar.getDayGan(),
+    dayMaster: references.dayStem,
     pillars,
     relations: detectRelations(pillars),
+    elementInteractions: buildElementInteractions(pillars),
     prevJie: nearTerm(lunar.getPrevJie()),
     nextJie: nearTerm(lunar.getNextJie()),
     prevQi: nearTerm(lunar.getPrevQi()),
@@ -231,13 +250,7 @@ export function compareCivilAndTrueSolar(input: BirthInput): ChartComparison {
       ? []
       : [{ label: pillar.label, civil: pillar.ganZhi, trueSolar: corrected.ganZhi }];
   });
-
-  return {
-    civil,
-    trueSolar,
-    differences,
-    hasDifference: differences.length > 0,
-  };
+  return { civil, trueSolar, differences, hasDifference: differences.length > 0 };
 }
 
 export function validateBirthInput(input: BirthInput): void {
@@ -247,8 +260,9 @@ export function validateBirthInput(input: BirthInput): void {
   if (!Number.isInteger(input.month) || input.month < 1 || input.month > 12) {
     throw new Error('月份必须在 1—12 之间。');
   }
-  if (!Number.isInteger(input.day) || input.day < 1 || input.day > 31) {
-    throw new Error('日期无效。');
+  const maxDay = input.calendarType === 'lunar' ? 30 : 31;
+  if (!Number.isInteger(input.day) || input.day < 1 || input.day > maxDay) {
+    throw new Error(`${input.calendarType === 'lunar' ? '农历' : '公历'}日期无效。`);
   }
   if (!Number.isInteger(input.hour) || input.hour < 0 || input.hour > 23) {
     throw new Error('小时必须在 0—23 之间。');
@@ -267,6 +281,22 @@ export function validateBirthInput(input: BirthInput): void {
   }
   if (!Number.isFinite(input.dstMinutes) || input.dstMinutes < -120 || input.dstMinutes > 180) {
     throw new Error('夏令时修正必须在 -120—180 分钟之间。');
+  }
+
+  if (input.calendarType === 'lunar') {
+    try {
+      Lunar.fromYmdHms(
+        input.year,
+        input.leapMonth ? -input.month : input.month,
+        input.day,
+        input.hour,
+        input.minute,
+        input.second ?? 0,
+      );
+    } catch {
+      throw new Error('该农历日期或闰月在所选年份不存在。');
+    }
+    return;
   }
 
   const probe = new Date(Date.UTC(input.year, input.month - 1, input.day));
