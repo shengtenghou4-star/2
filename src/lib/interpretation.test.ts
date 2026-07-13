@@ -124,7 +124,7 @@ describe('climate and support-balance tracks', () => {
   });
 
   it('gives a weak metal day master an印比扶身 direction without calling it final useful god', () => {
-    const natal = natalNodes(['甲午', '丙午', '庚寅', '丁卯']);
+    const natal = natalNodes(['甲午', '丙午', '庚寅', '戊辰']);
     const data = snapshot(natal);
     const track = buildSupportBalanceTrack('金', data.natalStrength);
     expect(track.orientation).toBe('宜扶候选');
@@ -134,7 +134,7 @@ describe('climate and support-balance tracks', () => {
   });
 
   it('marks climate water versus weak-metal support direction as a track conflict', () => {
-    const natal = natalNodes(['甲午', '丙午', '庚寅', '丁卯']);
+    const natal = natalNodes(['甲午', '丙午', '庚寅', '戊辰']);
     const data = snapshot(natal);
     const climate = buildClimateAssessment(natal, natal);
     const track = buildSupportBalanceTrack('金', data.natalStrength);
@@ -143,7 +143,7 @@ describe('climate and support-balance tracks', () => {
   });
 
   it('returns three separate tracks and no final use-god field', () => {
-    const natal = natalNodes(['甲午', '丙午', '庚寅', '丁卯']);
+    const natal = natalNodes(['甲午', '丙午', '庚寅', '戊辰']);
     const data = snapshot(natal);
     const result = buildInterpretationAssessment(
       natal,
