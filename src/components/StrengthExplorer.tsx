@@ -8,7 +8,7 @@ import {
   type StrengthAdjudication,
   type StrengthAxis,
   type StrengthEvidenceItem,
-} from '../lib/strength';
+} from '../lib/strength-audited';
 
 function ratioPercent(value: number): string {
   return `${Math.max(2, Math.min(98, Math.round(value * 100)))}%`;
