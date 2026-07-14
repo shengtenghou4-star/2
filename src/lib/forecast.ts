@@ -1,4 +1,5 @@
 import type { BaziChart, LuckCycle, LuckYear } from './bazi';
+import type { LuckContext } from './context';
 import { buildDynamicsSnapshot } from './dynamics';
 import { buildEnergyAssessment } from './energy';
 import { buildEvidenceSnapshot } from './evidence';
@@ -121,6 +122,17 @@ function scoreNodes(chart: BaziChart, nodes: TemporalPillar[], cycleGanZhi: stri
     contestedPercent: energy.current.contestedPercent,
     note,
   };
+}
+
+export function buildContextForecast(chart: BaziChart, context: LuckContext): ForecastPoint {
+  return scoreNodes(
+    chart,
+    context.nodes,
+    context.cycle.ganZhi,
+    context.year.year,
+    context.year.age,
+    `${context.year.ganZhi}${context.month.pillar.ganZhi}`,
+  );
 }
 
 export function buildLifeForecast(chart: BaziChart): LifeForecast {
