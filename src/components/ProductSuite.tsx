@@ -4,12 +4,14 @@ import { compareCivilAndTrueSolar, type BaziChart, type BirthInput } from '../li
 import { buildCareerAssessment, type CareerAssessment } from '../lib/career';
 import type { LuckContext } from '../lib/context';
 import { buildContextForecast, buildLifeForecast, buildMonthlyForecast } from '../lib/forecast';
+import { normalizeAutomaticTime } from '../lib/location';
 import {
   buildCompatibilityAssessment,
   buildRelationshipProfile,
   type CompatibilityAssessment,
 } from '../lib/relationship';
 import { buildWealthAssessment } from '../lib/wealth';
+import { LocationSearch, type LocationPatch } from './LocationSearch';
 
 export type ProductTopic = 'wealth' | 'relationship' | 'timeline' | 'roles';
 
@@ -28,6 +30,10 @@ const MODE_EXAMPLES: Record<string, string[]> = {
   规则治理: ['项目管理', '合规风控', '组织治理', '公共管理', '复杂交付'],
   自主竞争: ['创业与开拓', '独立负责人', '销售谈判', '团队动员', '高不确定任务'],
 };
+
+function clockValue(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
 
 function careerFor(chart: BaziChart, context: LuckContext, bundle: ReturnType<typeof buildAnalysisBundle>) {
   return buildCareerAssessment({
@@ -115,7 +121,7 @@ function WealthPanel({ chart, context }: { chart: BaziChart; context: LuckContex
 function RelationshipPanel({ chart, context }: { chart: BaziChart; context: LuckContext }) {
   const bundle = useMemo(() => buildAnalysisBundle(chart, context), [chart, context]);
   const profile = useMemo(() => buildRelationshipProfile(bundle), [bundle]);
-  const [partnerInput, setPartnerInput] = useState<BirthInput>(() => ({ ...chart.input, calendarType: 'solar', leapMonth: false, year: 2000, month: 1, day: 1, hour: 12, minute: 0, gender: chart.input.gender === 'male' ? 'female' : 'male' }));
+  const [partnerInput, setPartnerInput] = useState<BirthInput>(() => ({ ...chart.input, calendarType: 'solar', leapMonth: false, year: 2000, month: 1, day: 1, hour: 12, minute: 0, gender: chart.input.gender === 'male' ? 'female' : 'male', timeBasis: 'true-solar' }));
   const [compatibility, setCompatibility] = useState<CompatibilityAssessment | null>(null);
   const [partnerChart, setPartnerChart] = useState<BaziChart | null>(null);
   const [error, setError] = useState('');
@@ -123,13 +129,26 @@ function RelationshipPanel({ chart, context }: { chart: BaziChart; context: Luck
   function update<K extends keyof BirthInput>(key: K, value: BirthInput[K]) {
     setPartnerInput((previous) => ({ ...previous, [key]: value }));
   }
+
+  function updateClock(value: string) {
+    const [hour, minute] = value.split(':').map(Number);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return;
+    setPartnerInput((previous) => ({ ...previous, hour, minute }));
+  }
+
+  function applyLocation(patch: LocationPatch) {
+    setPartnerInput((previous) => ({ ...previous, ...patch }));
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
     try {
-      const comparison = compareCivilAndTrueSolar(partnerInput);
-      const nextChart = partnerInput.timeBasis === 'true-solar' ? comparison.trueSolar : comparison.civil;
+      const normalized = normalizeAutomaticTime(partnerInput);
+      const comparison = compareCivilAndTrueSolar(normalized);
+      const nextChart = comparison.trueSolar;
       const nextBundle = buildNatalAnalysisBundle(nextChart);
       const primaryNatal = buildNatalAnalysisBundle(chart);
+      setPartnerInput(normalized);
       setPartnerChart(nextChart);
       setCompatibility(buildCompatibilityAssessment(chart, primaryNatal, nextChart, nextBundle));
       setError('');
@@ -144,18 +163,17 @@ function RelationshipPanel({ chart, context }: { chart: BaziChart; context: Luck
       <div className="relationship-axis-grid">{profile.axes.map((item) => <article key={item.id}><header><b>{item.name}</b><strong>{item.score.toFixed(2)}</strong></header><p>{item.summary}</p><i><em style={{ width: `${item.score}%` }} /></i></article>)}</div>
       <div className="topic-two-column"><section><div className="subheading"><h3>关系需要</h3><span>要转成可执行约定</span></div>{profile.needs.map((item) => <p className="topic-line" key={item}>{item}</p>)}</section><section><div className="subheading"><h3>关系风险</h3><span>不是给具体伴侣贴标签</span></div>{profile.risks.map((item) => <p className="topic-line warning" key={item}>{item}</p>)}</section></div>
       <section className="compatibility-workbench">
-        <div className="subheading"><h3>双人合盘</h3><span>输入第二张盘，跨盘识别合冲刑害与关系机制</span></div>
+        <div className="subheading"><h3>双人合盘</h3><span>第二个人也自动识别出生地、时区与真太阳时</span></div>
         <form onSubmit={submit}>
           <label><span>年</span><input type="number" min="1900" max="2100" value={partnerInput.year} onChange={(event) => update('year', Number(event.target.value))} /></label>
           <label><span>月</span><input type="number" min="1" max="12" value={partnerInput.month} onChange={(event) => update('month', Number(event.target.value))} /></label>
           <label><span>日</span><input type="number" min="1" max="31" value={partnerInput.day} onChange={(event) => update('day', Number(event.target.value))} /></label>
-          <label><span>时</span><input type="number" min="0" max="23" value={partnerInput.hour} onChange={(event) => update('hour', Number(event.target.value))} /></label>
-          <label><span>分</span><input type="number" min="0" max="59" value={partnerInput.minute} onChange={(event) => update('minute', Number(event.target.value))} /></label>
+          <label><span>时间</span><input type="time" step="60" value={clockValue(partnerInput.hour, partnerInput.minute)} onChange={(event) => updateClock(event.target.value)} /></label>
           <label><span>性别</span><select value={partnerInput.gender} onChange={(event) => update('gender', event.target.value as BirthInput['gender'])}><option value="male">男</option><option value="female">女</option></select></label>
-          <label><span>口径</span><select value={partnerInput.timeBasis} onChange={(event) => update('timeBasis', event.target.value as BirthInput['timeBasis'])}><option value="true-solar">真太阳时</option><option value="civil">民用时</option></select></label>
           <button type="submit">生成合盘</button>
         </form>
-        <p className="compatibility-location">默认继承当前命盘的地点、经纬度、时区和晚子时口径，可在基础输入区先切换。</p>
+        <LocationSearch input={partnerInput} onResolve={applyLocation} compact />
+        <p className="compatibility-location">两张命盘都固定采用系统自动计算的真太阳时，不再要求用户选择口径。</p>
         {error && <p className="error">{error}</p>}
         {compatibility && partnerChart && <div className="compatibility-result"><div className="compatibility-head"><div><span>{compatibility.version} · {compatibility.fingerprint}</span><h3>{compatibility.headline}</h3><p>{compatibility.summary}</p></div><aside><b>{compatibility.confidence}</b><strong>{compatibility.confidenceScore.toFixed(2)}</strong><small>{partnerChart.pillars.map((item) => item.ganZhi).join(' ')}</small></aside></div><div className="compatibility-axis-grid">{compatibility.axes.map((item) => <article key={item.id}><header><b>{item.name}</b><strong>{item.score.toFixed(2)}</strong></header><p>{item.summary}</p><i><em style={{ width: `${item.score}%` }} /></i></article>)}</div><div className="topic-two-column"><section><div className="subheading"><h3>连接优势</h3></div>{compatibility.strengths.map((item) => <p className="topic-line" key={item}>{item}</p>)}</section><section><div className="subheading"><h3>经营课题</h3></div>{compatibility.tensions.map((item) => <p className="topic-line warning" key={item}>{item}</p>)}</section></div><div className="agreement-list"><strong>建议明确的关系协议</strong>{compatibility.agreements.map((item) => <p key={item}>{item}</p>)}</div><details><summary>查看跨盘关系 {compatibility.crossRelations.length} 条</summary>{compatibility.crossRelations.map((item) => <div key={item.id}><b>{item.name}</b><span>{item.members.map((member) => `${member.label}${member.char}`).join(' ↔ ')}</span><p>{item.note}</p></div>)}</details></div>}
       </section>

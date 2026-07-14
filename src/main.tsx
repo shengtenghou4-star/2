@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import './user-first.css';
 import './foundation.css';
 import './report.css';
 import './career.css';
