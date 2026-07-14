@@ -176,7 +176,7 @@ export function buildWealthAssessment(chart: BaziChart, context: LuckContext, bu
     risks.push({
       id: 'wealth:risk:overload', title: '机会规模可能超过个人承载', level: support < 32 ? '高' : '中',
       explanation: '财星与收入捕获能力并不等于可以无限承担客户、债务、预算或项目责任。扶身偏低时，规模扩张更容易转化为现金流和精力压力。',
-      control: '优先建立分阶段投入、止损、授权和现金储备，不以账面机会替代可兑现利润。', evidence: [ev(wealth), { id: 'wealth:support', label: `扶身${support.toFixed(2)}%`, detail: bundle.currentStrength.summary, value: support }],
+      control: '优先建立分阶段投入、止损、授权和现金储备，不以账面机会替代可兑现利润。', evidence: [ev(wealth), { id: 'wealth:support', label: `扶身${support.toFixed(2)}%`, detail: `${bundle.currentStrength.leading.name}领先；扶身证据${support.toFixed(2)}%，耗泄克身证据${(100 - support).toFixed(2)}%。`, value: support }],
     });
   }
   if (peers.percentage >= 22 && wealth.percentage >= 16) {
