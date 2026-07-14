@@ -13,30 +13,57 @@ interface SavedChart {
   updatedAt: string;
 }
 
-function readArchive(): SavedChart[] {
+interface ArchiveSnapshot {
+  items: SavedChart[];
+  storageAvailable: boolean;
+}
+
+function readArchive(): ArchiveSnapshot {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) return { items: [], storageAvailable: true };
     const value = JSON.parse(raw) as SavedChart[];
-    return Array.isArray(value) ? value : [];
+    return { items: Array.isArray(value) ? value : [], storageAvailable: true };
   } catch {
-    return [];
+    return { items: [], storageAvailable: false };
   }
 }
 
 function writeArchive(items: SavedChart[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function copyText(value: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function ArchiveManager({ currentInput, onLoad }: { currentInput: BirthInput; onLoad: (input: BirthInput) => void }) {
-  const [items, setItems] = useState<SavedChart[]>(() => readArchive());
+  const [initialArchive] = useState<ArchiveSnapshot>(() => readArchive());
+  const [items, setItems] = useState<SavedChart[]>(initialArchive.items);
+  const [storageAvailable, setStorageAvailable] = useState(initialArchive.storageAvailable);
   const [name, setName] = useState('');
   const [tags, setTags] = useState('');
   const [note, setNote] = useState('');
   const [query, setQuery] = useState('');
   const [message, setMessage] = useState('');
 
-  useEffect(() => writeArchive(items), [items]);
+  useEffect(() => {
+    if (!storageAvailable) return;
+    if (!writeArchive(items)) {
+      setStorageAvailable(false);
+      setMessage('浏览器禁止本地存储；档案仅在当前页面临时保留。');
+    }
+  }, [items, storageAvailable]);
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -60,7 +87,7 @@ export function ArchiveManager({ currentInput, onLoad }: { currentInput: BirthIn
     setName('');
     setTags('');
     setNote('');
-    setMessage('已保存在此浏览器本地。');
+    setMessage(storageAvailable ? '已保存在此浏览器本地。' : '已在当前页面临时保存；关闭页面后不会保留。');
   }
 
   function remove(id: string) {
@@ -68,19 +95,19 @@ export function ArchiveManager({ currentInput, onLoad }: { currentInput: BirthIn
   }
 
   async function exportArchive() {
-    await navigator.clipboard.writeText(JSON.stringify(items, null, 2));
-    setMessage('已复制全部档案 JSON。');
+    const copied = await copyText(JSON.stringify(items, null, 2));
+    setMessage(copied ? '已复制全部档案 JSON。' : '当前浏览器禁止读取剪贴板，请使用浏览器的复制功能。');
   }
 
   function clearAll() {
     setItems([]);
-    setMessage('本地档案已清空。');
+    setMessage(storageAvailable ? '本地档案已清空。' : '当前页面的临时档案已清空。');
   }
 
   return (
     <section className="archive-manager">
       <div className="archive-heading"><div><span>LOCAL ARCHIVE</span><h3>命盘档案</h3></div><b>{items.length}</b></div>
-      <p>只保存在当前浏览器，不上传服务器。可保存自己、家人、朋友或候选时辰。</p>
+      <p>{storageAvailable ? '只保存在当前浏览器，不上传服务器。可保存自己、家人、朋友或候选时辰。' : '浏览器已禁止本地存储；主命盘仍可正常使用，档案仅在当前页面临时保留。'}</p>
       <div className="archive-save-grid">
         <input placeholder="档案名称" value={name} onChange={(event) => setName(event.target.value)} />
         <input placeholder="标签，用空格分隔" value={tags} onChange={(event) => setTags(event.target.value)} />
