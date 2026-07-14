@@ -8,6 +8,8 @@ on:
     paths:
       - 'src/lib/**'
       - 'src/components/PatternClimateExplorer.tsx'
+      - 'src/components/CoreReportExplorer.tsx'
+      - 'src/components/CareerExplorer.tsx'
       - 'package.json'
       - 'vitest.domain.config.ts'
       - '.github/workflows/domain-audit.yml'

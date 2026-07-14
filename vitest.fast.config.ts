@@ -7,6 +7,7 @@ export default defineConfig({
       'src/lib/domain-coverage.test.ts',
       'src/lib/energy-domain.test.ts',
       'src/lib/report-domain.test.ts',
+      'src/lib/career-domain.test.ts',
     ],
   },
 });

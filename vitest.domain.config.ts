@@ -6,8 +6,9 @@ export default defineConfig({
       'src/lib/domain-coverage.test.ts',
       'src/lib/energy-domain.test.ts',
       'src/lib/report-domain.test.ts',
+      'src/lib/career-domain.test.ts',
     ],
-    testTimeout: 180_000,
-    hookTimeout: 180_000,
+    testTimeout: 240_000,
+    hookTimeout: 240_000,
   },
 });

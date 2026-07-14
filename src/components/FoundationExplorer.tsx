@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { BaziChart } from '../lib/bazi';
 import { buildLuckContext } from '../lib/context';
 import type { TemporalPillar } from '../lib/timeline';
+import { CareerExplorer } from './CareerExplorer';
 import { CoreReportExplorer } from './CoreReportExplorer';
 import { DynamicsExplorer } from './DynamicsExplorer';
 import { EnergyExplorer } from './EnergyExplorer';
@@ -68,7 +69,7 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
 
   return (
     <section className="panel foundation-panel">
-      <div className="section-heading compact"><span>04</span><div><h2>岁运推演与命盘总报告</h2><p>先给出当前最优综合判断，再向下展开事实、证据、候选和审计账本</p></div></div>
+      <div className="section-heading compact"><span>04</span><div><h2>岁运推演与主题报告</h2><p>先给出综合结论和事业主题，再向下展开事实、证据、候选和审计账本</p></div></div>
 
       <div className="timeline-selectors">
         <label><span>大运</span><select value={cycleIndex} onChange={(event) => changeCycle(Number(event.target.value))}>
@@ -91,6 +92,7 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
       <div className="temporal-grid"><TemporalCard pillar={context.cycle.pillar} /><TemporalCard pillar={context.year.pillar} /><TemporalCard pillar={context.month.pillar} /></div>
 
       <CoreReportExplorer chart={chart} context={context} />
+      <CareerExplorer chart={chart} context={context} />
 
       <div className="foundation-subgrid">
         <section>
@@ -124,7 +126,7 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
       <StrengthExplorer chart={chart} context={context} />
       <PatternClimateExplorer chart={chart} context={context} />
 
-      <p className="foundation-boundary">总报告给出当前最优综合判断；下方专业层保留全部能量、旺衰、格局、调候、反证和推翻条件。当前仍不输出未经建模的现实事件断语。</p>
+      <p className="foundation-boundary">事业报告只判断职业能力机制、环境条件和阶段变化；下方专业层保留全部能量、旺衰、格局、调候、反证和推翻条件。当前仍不输出未经建模的现实事件断语。</p>
     </section>
   );
 }

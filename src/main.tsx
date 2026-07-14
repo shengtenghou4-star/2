@@ -4,6 +4,7 @@ import App from './App';
 import './styles.css';
 import './foundation.css';
 import './report.css';
+import './career.css';
 import './dynamics.css';
 import './energy.css';
 import './energy-audit.css';
