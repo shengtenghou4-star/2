@@ -9,7 +9,7 @@ import {
   buildCoreReport,
   type ReportFinding,
   type ReportVerdict,
-} from '../lib/report';
+} from '../lib/report-audited';
 import { buildStrengthAdjudication } from '../lib/strength-audited';
 
 function VerdictCard({ title, verdict }: { title: string; verdict: ReportVerdict }) {
