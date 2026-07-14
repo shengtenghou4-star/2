@@ -4,6 +4,7 @@ import App from './App';
 import './styles.css';
 import './foundation.css';
 import './dynamics.css';
+import './energy.css';
 import './strength.css';
 import './interpretation.css';
 
