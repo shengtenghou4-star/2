@@ -63,8 +63,16 @@ jobs:
           grep -q '出生信息' /tmp/mingjing-rendered.html
           grep -q '一分钟简报' /tmp/mingjing-rendered.html
           grep -q '命盘档案' /tmp/mingjing-rendered.html
+          grep -q '查找地点' /tmp/mingjing-rendered.html
+          grep -q '已自动采用真太阳时' /tmp/mingjing-rendered.html
+          grep -q '直接结论' /tmp/mingjing-rendered.html
+          grep -q 'type="time"' /tmp/mingjing-rendered.html
+          if grep -q '默认展示口径' /tmp/mingjing-rendered.html; then
+            echo 'The public UI still exposes the old time-basis selector.'
+            exit 1
+          fi
 
-          printf '{"status":"ok","source":"%s","checks":["出生信息","一分钟简报","命盘档案"]}\n' "$GITHUB_SHA" > standalone/smoke.json
+          printf '{"status":"ok","source":"%s","checks":["出生信息","一分钟简报","命盘档案","查找地点","已自动采用真太阳时","直接结论","原生时间控件","不再暴露时间口径选择"]}\n' "$GITHUB_SHA" > standalone/smoke.json
           echo 'Browser rendering smoke test: passed'
 
       - name: Publish one-file app branch
