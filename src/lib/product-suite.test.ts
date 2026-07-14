@@ -3,7 +3,8 @@ import { buildAnalysisBundle, buildNatalAnalysisBundle } from './analysis-bundle
 import { calculateBazi, type BirthInput } from './bazi-audited';
 import { buildLuckContext } from './context';
 import { buildLifeForecast, buildMonthlyForecast, isValidLifeForecast } from './forecast';
-import { buildCompatibilityAssessment, buildRelationshipProfile, isValidCompatibility } from './relationship';
+import { buildCompatibilityAssessment, isValidCompatibility } from './relationship-audited';
+import { buildRelationshipProfile } from './relationship';
 import { buildWealthAssessment, isValidWealthAssessment } from './wealth';
 
 function input(overrides: Partial<BirthInput> = {}): BirthInput {
@@ -50,13 +51,14 @@ describe('relationship and compatibility engines', () => {
     expect(profile.risks.length).toBeGreaterThan(0);
   });
 
-  it('compares two full charts without生肖一票否决 or fixed destiny language', () => {
+  it('compares two full charts without duplicate-structure inflation or fixed destiny language', () => {
     const left = calculateBazi(input());
     const right = calculateBazi(input({ year: 2001, month: 11, day: 8, hour: 18, gender: 'female' }));
     const result = buildCompatibilityAssessment(left, buildNatalAnalysisBundle(left), right, buildNatalAnalysisBundle(right));
     expect(isValidCompatibility(result)).toBe(true);
     expect(result.axes).toHaveLength(5);
     expect(result.agreements.length).toBeGreaterThan(0);
+    expect(result.notes.some((note) => note.includes('唯一结构去重'))).toBe(true);
     const consumerText = JSON.stringify({
       headline: result.headline,
       summary: result.summary,
