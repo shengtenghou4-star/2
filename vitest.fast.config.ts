@@ -8,6 +8,7 @@ export default defineConfig({
       'src/lib/energy-domain.test.ts',
       'src/lib/report-domain.test.ts',
       'src/lib/career-domain.test.ts',
+      'src/lib/product-domain.test.ts',
     ],
   },
 });
