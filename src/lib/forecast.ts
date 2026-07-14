@@ -164,7 +164,12 @@ function scoreMonth(chart: BaziChart, cycle: LuckCycle, year: LuckYear, month: F
 export function buildMonthlyForecast(chart: BaziChart, cycleIndex: number, yearIndex: number): ForecastMonthPoint[] {
   const cycle = chart.luck.cycles[cycleIndex] ?? chart.luck.cycles[0];
   const year = cycle.years[yearIndex] ?? cycle.years[0];
-  const months = buildFlowMonths(year.year, chart.pillars[2].stem, chart.pillars[0].branch, chart.pillars[2].branch);
+  const references = {
+    dayStem: chart.pillars[2].stem,
+    yearBranch: chart.pillars[0].branch,
+    dayBranch: chart.pillars[2].branch,
+  };
+  const months = buildFlowMonths(year.year, year.ganZhi, references);
   return months.map((month) => scoreMonth(chart, cycle, year, month));
 }
 
