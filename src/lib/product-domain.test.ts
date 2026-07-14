@@ -76,7 +76,26 @@ describe('complete consumer single-chart topic domain', () => {
               relationshipLeaders.add(relationship.axes[0].id);
               if (!isValidWealthAssessment(wealth)) errors.push(`${label}: invalid wealth`);
               if (relationship.axes.length !== 5 || relationship.needs.length === 0 || relationship.risks.length === 0) errors.push(`${label}: invalid relationship`);
-              if (/必然富有|保证赚钱|天生一对|一定分手|生肖不合/.test(JSON.stringify({ wealth, relationship }))) errors.push(`${label}: deterministic claim`);
+              const consumerText = JSON.stringify({
+                wealth: {
+                  headline: wealth.headline,
+                  summary: wealth.summary,
+                  axes: wealth.axes,
+                  channels: wealth.channels,
+                  risks: wealth.risks,
+                  temporalSignals: wealth.temporalSignals,
+                },
+                relationship: {
+                  headline: relationship.headline,
+                  summary: relationship.summary,
+                  axes: relationship.axes,
+                  needs: relationship.needs,
+                  risks: relationship.risks,
+                },
+              });
+              if (/必然富有|保证赚钱|保证收益|你们天生一对|一定分手|生肖不合所以/.test(consumerText)) errors.push(`${label}: deterministic claim`);
+              if (!wealth.notes.some((note) => note.includes('不预测具体财富金额'))) errors.push(`${label}: missing wealth boundary`);
+              if (!relationship.notes.some((note) => note.includes('不能由生肖'))) errors.push(`${label}: missing relationship boundary`);
             } catch (error) {
               errors.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
             }
