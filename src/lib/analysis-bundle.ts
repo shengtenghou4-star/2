@@ -4,13 +4,15 @@ import { buildDynamicsSnapshot } from './dynamics';
 import { buildEnergyAssessment } from './energy';
 import { buildEvidenceSnapshot } from './evidence';
 import { buildInterpretationAssessment } from './interpretation-audited';
+import type { ChartRelation } from './relations';
 import { buildStrengthAdjudication } from './strength-audited';
+import type { TemporalPillar } from './timeline';
 
-export function buildAnalysisBundle(chart: BaziChart, context: LuckContext) {
+export function buildAnalysisForNodes(chart: BaziChart, nodes: TemporalPillar[], relations: ChartRelation[]) {
   const natalEvidence = buildEvidenceSnapshot(chart.pillars, chart.pillars, chart.relations);
-  const currentEvidence = buildEvidenceSnapshot(chart.pillars, context.nodes, context.relations);
+  const currentEvidence = buildEvidenceSnapshot(chart.pillars, nodes, relations);
   const natalDynamics = buildDynamicsSnapshot(chart.pillars, chart.relations, natalEvidence);
-  const currentDynamics = buildDynamicsSnapshot(context.nodes, context.relations, currentEvidence);
+  const currentDynamics = buildDynamicsSnapshot(nodes, relations, currentEvidence);
   const natalStrength = buildStrengthAdjudication(
     chart.pillars,
     chart.pillars,
@@ -20,16 +22,16 @@ export function buildAnalysisBundle(chart: BaziChart, context: LuckContext) {
   );
   const currentStrength = buildStrengthAdjudication(
     chart.pillars,
-    context.nodes,
-    context.relations,
+    nodes,
+    relations,
     currentEvidence,
     currentDynamics,
   );
   const interpretation = buildInterpretationAssessment(
     chart.pillars,
-    context.nodes,
+    nodes,
     chart.relations,
-    context.relations,
+    relations,
     natalEvidence,
     currentEvidence,
     natalDynamics,
@@ -39,9 +41,9 @@ export function buildAnalysisBundle(chart: BaziChart, context: LuckContext) {
   );
   const energy = buildEnergyAssessment(
     chart.pillars,
-    context.nodes,
+    nodes,
     chart.relations,
-    context.relations,
+    relations,
     natalEvidence,
     currentEvidence,
   );
@@ -57,4 +59,12 @@ export function buildAnalysisBundle(chart: BaziChart, context: LuckContext) {
   };
 }
 
-export type AnalysisBundle = ReturnType<typeof buildAnalysisBundle>;
+export function buildAnalysisBundle(chart: BaziChart, context: LuckContext) {
+  return buildAnalysisForNodes(chart, context.nodes, context.relations);
+}
+
+export function buildNatalAnalysisBundle(chart: BaziChart) {
+  return buildAnalysisForNodes(chart, chart.pillars, chart.relations);
+}
+
+export type AnalysisBundle = ReturnType<typeof buildAnalysisForNodes>;
