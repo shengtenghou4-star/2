@@ -107,7 +107,7 @@ export function buildRelationshipProfile(bundle: AnalysisBundle): RelationshipPr
     ]),
     axis('boundary', '自主与边界', 20 + peers.percentage * 1.42 + support * 0.22 - wealth.percentage * 0.16, '衡量在亲密关系中保持自我、协商空间和拒绝不合理要求的能力。', [
       { id: 'rel:peers', label: `比劫${peers.percentage.toFixed(2)}%`, detail: '比劫对应自主、同侪和边界竞争。', value: peers.percentage },
-      { id: 'rel:support', label: `扶身${support.toFixed(2)}%`, detail: bundle.currentStrength.summary, value: support },
+      { id: 'rel:support', label: `扶身${support.toFixed(2)}%`, detail: `${bundle.currentStrength.leading.name}领先；扶身证据${support.toFixed(2)}%，耗泄克身证据${(100 - support).toFixed(2)}%。`, value: support },
     ]),
     axis('responsibility', '责任与长期建设', 18 + authority.percentage * 1.38 + resource.percentage * 0.42 + wealth.percentage * 0.35 - (support < 35 ? 8 : 0), '衡量是否愿意承担关系责任、建立秩序并把关系落实到共同生活。', [
       { id: 'rel:authority', label: `官杀${authority.percentage.toFixed(2)}%`, detail: '官杀承担规则、责任与长期约束。', value: authority.percentage },
