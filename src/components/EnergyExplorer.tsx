@@ -1,7 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { BaziChart } from '../lib/bazi';
 import type { LuckContext } from '../lib/context';
-import { buildEnergyAssessment, type EnergyContribution, type ElementEnergyRow } from '../lib/energy';
+import {
+  buildEnergyAssessment,
+  isValidEnergySnapshot,
+  type EnergyContribution,
+  type ElementEnergyRow,
+} from '../lib/energy';
 import { buildEvidenceSnapshot } from '../lib/evidence';
 
 const ELEMENT_CLASS: Record<string, string> = { 木: 'wood', 火: 'fire', 土: 'earth', 金: 'metal', 水: 'water' };
@@ -23,7 +28,7 @@ function ElementRow({
     <article className={`energy-element-row element-${ELEMENT_CLASS[row.element] ?? ''}`}>
       <header>
         <span className="energy-element-symbol">{row.element}</span>
-        <div><b>{row.family}</b><small>原局 {natalPercentage.toFixed(2)}%</small></div>
+        <div><b>{row.family}</b><small>原局 {natalPercentage.toFixed(2)}% · {row.basisPoints}bp</small></div>
         <strong>{row.percentage.toFixed(2)}%</strong>
         <em className={delta > 0 ? 'is-up' : delta < 0 ? 'is-down' : ''}>{delta > 0 ? '+' : ''}{delta.toFixed(2)}pp</em>
       </header>
@@ -56,6 +61,7 @@ function ContributionRow({ item }: { item: EnergyContribution }) {
 }
 
 export function EnergyExplorer({ chart, context }: { chart: BaziChart; context: LuckContext }) {
+  const [copied, setCopied] = useState(false);
   const natalEvidence = useMemo(
     () => buildEvidenceSnapshot(chart.pillars, chart.pillars, chart.relations),
     [chart.pillars, chart.relations],
@@ -75,19 +81,28 @@ export function EnergyExplorer({ chart, context }: { chart: BaziChart; context: 
     ),
     [chart.pillars, chart.relations, context.nodes, context.relations, natalEvidence, currentEvidence],
   );
+  const auditJson = useMemo(() => JSON.stringify(assessment, null, 2), [assessment]);
   const deltaByElement = new Map(assessment.delta.map((item) => [item.element, item]));
   const current = assessment.current;
   const natal = assessment.natal;
+  const conservationPassed = isValidEnergySnapshot(natal) && isValidEnergySnapshot(current);
+
+  async function copyAudit() {
+    await navigator.clipboard.writeText(auditJson);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  }
 
   return (
     <section className="energy-explorer">
       <div className="evidence-heading">
         <div><span>STEP 06</span><h3>五行能量量化</h3></div>
-        <p>固定结构单位、逐项乘算、百分比归一化；每一分均可追溯，不把模型单位冒充物理能量。</p>
+        <p>固定结构单位、逐项乘算、整数基点归一化；每一分均可追溯，不把模型单位冒充物理能量。</p>
       </div>
 
       <div className="energy-summary-grid">
         <article><span>当前有效总量</span><b>{units(current.totalEffectiveUnits)}</b><small>{assessment.modelVersion} 模型单位</small></article>
+        <article><span>守恒审计</span><b>{conservationPassed ? '通过' : '失败'}</b><small>五行 10,000bp · 扶耗 10,000bp</small></article>
         <article><span>主导／最弱</span><b>{current.dominantElement} ／ {current.weakestElement}</b><small>按有效能量排序</small></article>
         <article><span>日主扶身占比</span><b>{current.balance.supportPercent.toFixed(2)}%</b><small>比劫＋印星 {units(current.balance.supportUnits)}</small></article>
         <article><span>耗泄克身占比</span><b>{current.balance.oppositionPercent.toFixed(2)}%</b><small>食伤＋财星＋官杀 {units(current.balance.oppositionUnits)}</small></article>
@@ -97,7 +112,7 @@ export function EnergyExplorer({ chart, context }: { chart: BaziChart; context: 
 
       <div className="energy-main-grid">
         <section className="energy-elements-panel">
-          <div className="subheading"><h3>五行百分比与模型单位</h3><span>总百分比严格等于 100%</span></div>
+          <div className="subheading"><h3>五行百分比与模型单位</h3><span>整数基点严格合计 10,000bp</span></div>
           <div className="energy-element-list">
             {current.elements.map((row) => {
               const delta = deltaByElement.get(row.element)!;
@@ -124,7 +139,7 @@ export function EnergyExplorer({ chart, context }: { chart: BaziChart; context: 
       </div>
 
       <section className="energy-contribution-panel">
-        <div className="subheading"><h3>单项贡献账本</h3><span>当前前 18 项 · 全量保存在计算对象中</span></div>
+        <div className="subheading"><h3>单项贡献账本</h3><span>当前前 18 项 · 完整账本可复制</span></div>
         <div className="energy-contribution-list">
           {current.contributions.slice(0, 18).map((item) => <ContributionRow key={item.id} item={item} />)}
         </div>
@@ -139,8 +154,9 @@ export function EnergyExplorer({ chart, context }: { chart: BaziChart; context: 
           <p><b>3</b><span>乘柱位、时间层与月令旺相休囚死倍率，得到原始结构量。</span></p>
           <p><b>4</b><span>根气只激活对应显干，透干只激活对应藏干，避免重复记账。</span></p>
           <p><b>5</b><span>合冲刑害折算可用性；不满足合化条件时不转移元素归属。</span></p>
-          <p><b>6</b><span>五行有效量归一化为 100%，并同时保留绝对模型单位。</span></p>
+          <p><b>6</b><span>五行有效量归一化为 10,000bp，并同时保留绝对模型单位。</span></p>
         </div>
+        <button className="energy-copy" type="button" onClick={copyAudit}>{copied ? '已复制完整能量 JSON' : '复制完整能量审计 JSON'}</button>
         <div className="energy-notes">{current.notes.map((note) => <p key={note}>{note}</p>)}</div>
       </section>
 
