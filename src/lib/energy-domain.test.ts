@@ -67,8 +67,8 @@ describe('complete quantified-energy structural domain', () => {
 
               if (!isValidEnergySnapshot(energy)) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: invalid snapshot`);
               if (energy.totalBaseUnits !== 400) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: base ${energy.totalBaseUnits}`);
-              if (energy.elements.reduce((sum, item) => sum + item.percentage, 0) !== 100) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: percentage sum`);
-              if (Math.abs(energy.balance.supportPercent + energy.balance.oppositionPercent - 100) > 0.01) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: support sum`);
+              if (energy.elements.reduce((sum, item) => sum + item.basisPoints, 0) !== 10_000) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: basis-point sum`);
+              if (energy.balance.supportBasisPoints + energy.balance.oppositionBasisPoints !== 10_000) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: support basis-point sum`);
               if (energy.balanceScore < 0 || energy.balanceScore > 100) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: balance score`);
               if (energy.contestedPercent < 0 || energy.contestedPercent > 100) errors.push(`${yearPillar} ${month} ${dayPillar} ${hour}: contested percent`);
             } catch (error) {
