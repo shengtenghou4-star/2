@@ -16,7 +16,25 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: npm test
+      - name: Run tests and capture output
+        shell: bash
+        run: |
+          set +e
+          npm test > product-test-output.log 2>&1
+          code=$?
+          echo "$code" > product-test-exit-code.txt
+          exit 0
+      - name: Upload product test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-test-diagnostics
+          path: |
+            product-test-output.log
+            product-test-exit-code.txt
+          if-no-files-found: error
+      - name: Enforce test result
+        run: test "$(cat product-test-exit-code.txt)" = "0"
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
