@@ -203,7 +203,8 @@ export function buildCompatibilityAssessment(
     { id: 'stability', name: '稳定与承诺', score: round(clamp(76 - securityGap * 0.58 + positive.length * 3 - conflict.length * 6)), summary: '比较双方稳定需求是否接近，以及跨盘冲害刑是否增加关系维护成本。', evidence: [{ id: 'compat:security-gap', label: `安全需求差${securityGap.toFixed(2)}`, detail: '差距较大时，双方对承诺和空间的解释可能不同。', value: securityGap }] },
     { id: 'autonomy', name: '自主与边界', score: round(clamp(80 - boundaryGap * 0.62 - conflict.length * 3 + Math.min(8, same * 0.18))), summary: '衡量双方能否在亲密与独立之间形成不靠控制维持的边界。', evidence: [{ id: 'compat:boundary-gap', label: `边界差${boundaryGap.toFixed(2)}`, detail: '差距越大，越需要提前约定联系频率、决策权和个人空间。', value: boundaryGap }] },
     { id: 'cooperation', name: '现实协作', score: round(clamp(52 + generating * 0.9 + positive.length * 4 - controlling * 0.45 - conflict.length * 4)), summary: '衡量资源、任务和长期生活安排能否形成有效协作。', evidence: [{ id: 'compat:interactions', label: `相生${generating}·相克${controlling}·同类${same}`, detail: '只记录结构互动，不直接判吉凶。' }] },
-  ].sort((a, b) => b.score - a.score);
+  ];
+  axes.sort((a, b) => b.score - a.score);
   const average = axes.reduce((sum, item) => sum + item.score, 0) / axes.length;
   const volatility = conflict.length * 4 + Math.max(expressionGap, securityGap, boundaryGap) * 0.18;
   const confidenceScore = round(clamp(average - volatility * 0.22 + Math.min(8, unique.length)));
