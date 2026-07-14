@@ -102,10 +102,13 @@ describe('career topic completeness', () => {
 
   it('describes work mechanisms rather than assigning a fixed industry', () => {
     const natal = natalNodes(['乙酉', '戊子', '辛巳', '壬辰']);
-    const text = JSON.stringify(assessmentFor(natal));
+    const assessment = assessmentFor(natal);
+    const text = JSON.stringify(assessment);
     expect(text).not.toMatch(/你必须从事|唯一职业|命中注定|必然成功/);
     expect(text).toContain('职业能力');
-    expect(text).toContain('组织环境');
+    expect(assessment.environments).toHaveLength(3);
+    expect(assessment.environments.every((item) => Boolean(item.title && item.explanation))).toBe(true);
+    expect(assessment.environments.some((item) => item.title.includes('环境') || item.title.includes('岗位'))).toBe(true);
   });
 });
 
