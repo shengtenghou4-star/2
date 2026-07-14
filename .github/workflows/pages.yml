@@ -38,8 +38,10 @@ jobs:
       - name: Build full web app
         run: npm run build
 
-      - name: Configure Pages
+      - name: Enable and configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
