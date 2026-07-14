@@ -6,6 +6,7 @@ export default defineConfig({
       ...configDefaults.exclude,
       'src/lib/domain-coverage.test.ts',
       'src/lib/energy-domain.test.ts',
+      'src/lib/report-domain.test.ts',
     ],
   },
 });
