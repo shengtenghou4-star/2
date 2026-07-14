@@ -73,7 +73,7 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
 
   return (
     <section className="panel foundation-panel">
-      <div className="section-heading compact"><span>04</span><div><h2>岁运推演与主题报告</h2><p>简报、主题和专业审计三级阅读；同一套底层结果，不同信息密度</p></div></div>
+      <div className="section-heading compact"><span>04</span><div><h2>岁运推演与主题报告</h2><p>普通模式直接给判断；专业模式再展开候选、证据与反证</p></div></div>
 
       <div className="timeline-selectors">
         <label><span>大运</span><select value={cycleIndex} onChange={(event) => changeCycle(Number(event.target.value))}>
@@ -101,10 +101,10 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
           <button type="button" className={readingMode === 'topics' ? 'active' : ''} onClick={() => setReadingMode('topics')}>主题报告</button>
           <button type="button" className={readingMode === 'professional' ? 'active' : ''} onClick={() => setReadingMode('professional')}>专业审计</button>
         </div>
-        <p>{readingMode === 'brief' ? '先看核心结论和四个生活主题摘要。' : readingMode === 'topics' ? '展开事业、财富、关系、时间轴和岗位映射。' : '查看全部事实、候选、公式、反证与审计账本。'}</p>
+        <p>{readingMode === 'brief' ? '直接看综合判断和生活主题摘要。' : readingMode === 'topics' ? '展开事业、财富、关系、时间轴和岗位映射。' : '查看原始候选、公式、反证和完整审计账本。'}</p>
       </div>
 
-      <CoreReportExplorer chart={chart} context={context} />
+      <CoreReportExplorer chart={chart} context={context} professional={readingMode === 'professional'} />
       {readingMode === 'brief' && <ProductSuite chart={chart} context={context} cycleIndex={cycleIndex} yearIndex={safeYearIndex} compact />}
       {(readingMode === 'topics' || readingMode === 'professional') && <>
         <CareerExplorer chart={chart} context={context} />
@@ -143,9 +143,9 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
         <EnergyExplorer chart={chart} context={context} />
         <StrengthExplorer chart={chart} context={context} />
         <PatternClimateExplorer chart={chart} context={context} />
-      </> : <div className="professional-gate">专业证据账已折叠。切换到“专业审计”可查看月令、根透、合冲、能量公式、旺衰候选、格局反证和完整性报告。</div>}
+      </> : <div className="professional-gate">专业证据账已折叠。普通阅读只保留结论；切换到“专业审计”可查看月令、根透、合冲、能量公式、旺衰排序、格局反证和完整性报告。</div>}
 
-      <p className="foundation-boundary">主题报告描述结构机制和阶段信号，不预测具体财富金额、婚恋事件或升职结果；现实决策仍需结合真实信息。</p>
+      <p className="foundation-boundary">报告描述结构倾向与阶段重点，不替代现实信息和个人选择。</p>
     </section>
   );
 }
