@@ -5,6 +5,7 @@ export default defineConfig({
     include: [
       'src/lib/domain-coverage.test.ts',
       'src/lib/energy-domain.test.ts',
+      'src/lib/report-domain.test.ts',
     ],
     testTimeout: 180_000,
     hookTimeout: 180_000,
