@@ -16,25 +16,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - name: Run tests and capture output
-        shell: bash
-        run: |
-          set +e
-          npm test > career-test-output.log 2>&1
-          code=$?
-          echo "$code" > career-test-exit-code.txt
-          exit 0
-      - name: Upload career test diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: career-test-diagnostics
-          path: |
-            career-test-output.log
-            career-test-exit-code.txt
-          if-no-files-found: error
-      - name: Enforce test result
-        run: test "$(cat career-test-exit-code.txt)" = "0"
+      - run: npm test
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
