@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --config vitest.fast.config.ts",
+    "test:domain": "vitest run --config vitest.domain.config.ts --reporter=verbose",
+    "test:watch": "vitest --config vitest.fast.config.ts"
   },
   "dependencies": {
     "@vitejs/plugin-react": "6.0.3",

@@ -1,4 +1,27 @@
 .interpretation-explorer{margin-top:24px;padding-top:24px;border-top:1px solid rgba(205,176,126,.18)}
+.analysis-integrity{margin:14px 0 16px;border:1px solid rgba(205,176,126,.18);background:rgba(9,9,7,.24);padding:13px}
+.analysis-integrity.level-通过{border-color:rgba(125,164,116,.38);box-shadow:inset 3px 0 rgba(125,164,116,.7)}
+.analysis-integrity.level-需复核{border-color:rgba(202,166,107,.38);box-shadow:inset 3px 0 rgba(202,166,107,.7)}
+.analysis-integrity.level-失败{border-color:rgba(208,112,88,.5);box-shadow:inset 3px 0 rgba(208,112,88,.8)}
+.analysis-integrity>header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.analysis-integrity>header div{display:flex;align-items:center;gap:9px}
+.analysis-integrity>header span{color:#928a7d;font-size:9px;letter-spacing:.08em}
+.analysis-integrity>header b{font-family:"Songti SC","STSong",serif;color:#e6d4b4;font-size:17px}
+.analysis-integrity>header code{font-size:8px;color:#8f887d;background:rgba(0,0,0,.22);border:1px solid rgba(205,176,126,.12);padding:5px 7px}
+.integrity-stats{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}
+.integrity-stats i{font-style:normal;color:#a79e90;border:1px solid rgba(205,176,126,.13);padding:4px 6px;font-size:8px}
+.integrity-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.integrity-checks article{border:1px solid rgba(205,176,126,.12);padding:8px;background:rgba(0,0,0,.12);min-width:0}
+.integrity-checks article.check-通过{border-color:rgba(125,164,116,.24)}
+.integrity-checks article.check-需复核{border-color:rgba(202,166,107,.3)}
+.integrity-checks article.check-失败{border-color:rgba(208,112,88,.4)}
+.integrity-checks span,.integrity-checks b,.integrity-checks small{display:block}
+.integrity-checks span{font-size:7px;color:#8f887d}
+.integrity-checks b{font-size:9px;color:#d5c7b1;margin-top:3px}
+.integrity-checks small{font-size:7px;color:#7f796f;line-height:1.45;margin-top:4px}
+.integrity-failure,.integrity-warning{font-size:8px;line-height:1.55;margin:9px 0 0;padding:7px 9px}
+.integrity-failure{color:#d89683;background:rgba(208,112,88,.07)}
+.integrity-warning{color:#baa274;background:rgba(202,166,107,.06)}
 .interpretation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .interpretation-summary article{border:1px solid rgba(205,176,126,.14);background:rgba(10,9,7,.18);padding:12px}
 .interpretation-summary span{display:block;color:#8f887c;font-size:10px;margin-bottom:8px}
@@ -64,5 +87,5 @@
 .track-comparison-panel article.relation-方向冲突{border-color:rgba(199,112,89,.4);background:rgba(199,112,89,.05)}
 .interpretation-notes{margin-top:11px;border-left:2px solid #c7a56c;padding:8px 11px;background:rgba(199,165,108,.05)}
 .interpretation-notes p{font-size:8px;color:#8e8679;line-height:1.55;margin:3px 0}
-@media(max-width:1100px){.interpretation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.pattern-list{grid-template-columns:1fr 1fr}.track-grid{grid-template-columns:1fr}.track-comparison-panel>div:last-child{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.interpretation-summary,.pattern-list,.track-comparison-panel>div:last-child{grid-template-columns:1fr}.interpretation-conditions{grid-template-columns:1fr}.climate-needs>article>div{grid-template-columns:1fr}.support-elements{grid-template-columns:1fr}}
+@media(max-width:1100px){.integrity-checks{grid-template-columns:repeat(2,minmax(0,1fr))}.interpretation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.pattern-list{grid-template-columns:1fr 1fr}.track-grid{grid-template-columns:1fr}.track-comparison-panel>div:last-child{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.analysis-integrity>header{align-items:flex-start;flex-direction:column}.integrity-checks,.interpretation-summary,.pattern-list,.track-comparison-panel>div:last-child{grid-template-columns:1fr}.interpretation-conditions{grid-template-columns:1fr}.climate-needs>article>div{grid-template-columns:1fr}.support-elements{grid-template-columns:1fr}}

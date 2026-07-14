@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { BaziChart } from '../lib/bazi';
 import type { LuckContext } from '../lib/context';
+import { auditAnalysisIntegrity } from '../lib/analysis-integrity';
 import { buildDynamicsSnapshot } from '../lib/dynamics';
 import { buildEvidenceSnapshot } from '../lib/evidence';
 import { buildInterpretationAssessment, type InterpretationCondition } from '../lib/interpretation-audited';
@@ -72,12 +73,61 @@ export function PatternClimateExplorer({ chart, context }: { chart: BaziChart; c
     ],
   );
 
+  const integrity = useMemo(
+    () => auditAnalysisIntegrity({
+      chart,
+      context,
+      natalEvidence,
+      currentEvidence,
+      natalDynamics,
+      currentDynamics,
+      natalStrength,
+      currentStrength,
+      interpretation: result,
+    }),
+    [
+      chart,
+      context,
+      natalEvidence,
+      currentEvidence,
+      natalDynamics,
+      currentDynamics,
+      natalStrength,
+      currentStrength,
+      result,
+    ],
+  );
+
   return (
     <section className="interpretation-explorer">
       <div className="evidence-heading">
         <div><span>STEP 07</span><h3>格局候选与调候／扶抑分轨</h3></div>
         <p>月令格局、寒暖燥湿、旺衰扶抑分别回答不同问题；方向冲突必须公开。</p>
       </div>
+
+      <section className={`analysis-integrity level-${integrity.level}`}>
+        <header>
+          <div><span>当前命盘完整性审计</span><b>{integrity.level}</b></div>
+          <code>{integrity.fingerprint}</code>
+        </header>
+        <div className="integrity-stats">
+          <i>原局柱 {integrity.coverage.natalPillars}</i>
+          <i>岁运节点 {integrity.coverage.temporalNodes}</i>
+          <i>格局候选 {integrity.coverage.patternCandidates}</i>
+          <i>旺衰候选 {integrity.coverage.strengthHypotheses}</i>
+          <i>力量证据 {integrity.coverage.evidenceItems}</i>
+          <i>关系结构 {integrity.coverage.relationItems}</i>
+        </div>
+        <div className="integrity-checks">
+          {integrity.checks.map((item) => (
+            <article key={item.id} className={`check-${item.level}`} title={item.detail}>
+              <span>{item.level}</span><b>{item.label}</b><small>{item.detail}</small>
+            </article>
+          ))}
+        </div>
+        {integrity.failures.length > 0 && <p className="integrity-failure">硬失败：{integrity.failures.join('；')}</p>}
+        {integrity.warnings.length > 0 && <p className="integrity-warning">提示：{integrity.warnings.join('；')}</p>}
+      </section>
 
       <div className="interpretation-summary">
         <article>
