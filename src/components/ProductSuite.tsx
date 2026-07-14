@@ -3,7 +3,7 @@ import { buildAnalysisBundle, buildNatalAnalysisBundle } from '../lib/analysis-b
 import { compareCivilAndTrueSolar, type BaziChart, type BirthInput } from '../lib/bazi-audited';
 import { buildCareerAssessment, type CareerAssessment } from '../lib/career';
 import type { LuckContext } from '../lib/context';
-import { buildLifeForecast, buildMonthlyForecast } from '../lib/forecast';
+import { buildContextForecast, buildLifeForecast, buildMonthlyForecast } from '../lib/forecast';
 import {
   buildCompatibilityAssessment,
   buildRelationshipProfile,
@@ -186,8 +186,7 @@ export function ProductSuite({ chart, context, cycleIndex, yearIndex, compact = 
   const wealth = useMemo(() => buildWealthAssessment(chart, context, bundle), [chart, context, bundle]);
   const relationship = useMemo(() => buildRelationshipProfile(bundle), [bundle]);
   const career = useMemo(() => careerFor(chart, context, bundle), [chart, context, bundle]);
-  const forecast = useMemo(() => buildLifeForecast(chart), [chart]);
-  const currentPoint = forecast.points.find((item) => item.year === context.year.year) ?? forecast.points[0];
+  const currentPoint = useMemo(() => buildContextForecast(chart, context), [chart, context]);
 
   if (compact) {
     return <section className="product-digest"><article><span>事业</span><b>{career.headline}</b><p>{career.summary}</p></article><article><span>财富</span><b>{wealth.headline}</b><p>{wealth.summary}</p></article><article><span>关系</span><b>{relationship.headline}</b><p>{relationship.summary}</p></article><article><span>当前年份</span><b>{currentPoint.year} · {currentPoint.theme}</b><p>机会 {currentPoint.opportunity.toFixed(0)} · 压力 {currentPoint.pressure.toFixed(0)} · 变化 {currentPoint.change.toFixed(0)}</p></article></section>;
