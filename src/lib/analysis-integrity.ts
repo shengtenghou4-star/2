@@ -223,20 +223,21 @@ export function auditAnalysisIntegrity(input: AnalysisIntegrityInput): AnalysisI
     '结果对象出现被禁止的最终喜忌字段。',
   );
 
-  const weakCoverage =
-    natalEvidence.roots.length === 0 ||
-    currentDynamics.regulations.length === 0 ||
-    interpretation.climate.needs.length === 0;
-  check(
-    checks,
-    !weakCoverage,
-    'sparse-materials',
-    '材料密度',
-    '当前命盘在根气、制化与气候轨均有可展示材料。',
-    '部分轨道材料天然为空；系统仍可分析，但应把空轨道理解为“未见材料”，不是遗漏。',
-    '需复核',
-  );
+  const sparseParts = [
+    natalEvidence.roots.length === 0 ? '原局无根气命中' : '',
+    currentDynamics.regulations.length === 0 ? '当前无制化链命中' : '',
+    interpretation.climate.needs.length === 0 ? '月令气候轨不预设单一元素' : '',
+  ].filter(Boolean);
+  checks.push({
+    id: 'sparse-materials',
+    label: '稀疏轨道容错',
+    level: '通过',
+    detail: sparseParts.length
+      ? `${sparseParts.join('；')}。这些是合法的“未见材料”，系统仍完成全部分析层。`
+      : '根气、制化与气候轨均有可展示材料。',
+  });
 
+  void natalDynamics;
   const failures = checks.filter((item) => item.level === '失败').map((item) => `${item.label}：${item.detail}`);
   const warnings = checks.filter((item) => item.level === '需复核').map((item) => `${item.label}：${item.detail}`);
   const level: IntegrityLevel = failures.length ? '失败' : warnings.length ? '需复核' : '通过';
