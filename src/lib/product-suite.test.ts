@@ -25,7 +25,17 @@ describe('wealth product engine', () => {
     expect(isValidWealthAssessment(result)).toBe(true);
     expect(new Set(result.axes.map((item) => item.id)).size).toBe(5);
     expect(result.axes.map((item) => item.score)).toEqual([...result.axes.map((item) => item.score)].sort((a, b) => b - a));
-    expect(JSON.stringify(result)).not.toMatch(/必然富有|保证赚钱|具体财富金额/);
+    const consumerText = JSON.stringify({
+      headline: result.headline,
+      summary: result.summary,
+      axes: result.axes,
+      channels: result.channels,
+      risks: result.risks,
+      temporalSignals: result.temporalSignals,
+    });
+    expect(consumerText).not.toMatch(/必然富有|保证赚钱|保证收益|财富金额为/);
+    expect(result.notes.some((note) => note.includes('不预测具体财富金额'))).toBe(true);
+    expect(result.notes.some((note) => note.includes('不等于必然富有'))).toBe(true);
   });
 });
 
@@ -47,7 +57,16 @@ describe('relationship and compatibility engines', () => {
     expect(isValidCompatibility(result)).toBe(true);
     expect(result.axes).toHaveLength(5);
     expect(result.agreements.length).toBeGreaterThan(0);
-    expect(JSON.stringify(result)).not.toMatch(/生肖不合|天生一对|一定分手|命中注定/);
+    const consumerText = JSON.stringify({
+      headline: result.headline,
+      summary: result.summary,
+      strengths: result.strengths,
+      tensions: result.tensions,
+      agreements: result.agreements,
+    });
+    expect(consumerText).not.toMatch(/生肖不合所以|你们天生一对|一定分手|命中注定/);
+    expect(result.notes.some((note) => note.includes('不使用生肖一票否决'))).toBe(true);
+    expect(result.notes.some((note) => note.includes('不把五行互补视为天生一对'))).toBe(true);
   });
 });
 
