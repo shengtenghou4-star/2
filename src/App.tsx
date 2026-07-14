@@ -1,5 +1,7 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { ArchiveManager } from './components/ArchiveManager';
 import { FoundationExplorer } from './components/FoundationExplorer';
+import { HourCandidateExplorer } from './components/HourCandidateExplorer';
 import {
   compareCivilAndTrueSolar,
   type BaziChart,
@@ -125,17 +127,22 @@ function App() {
     const preset = LOCATION_PRESETS.find((item) => item.locationName === name);
     if (preset) setForm((previous) => ({ ...previous, ...preset }));
   }
-  function submit(event: FormEvent) {
-    event.preventDefault();
+  function loadInput(input: BirthInput) {
     try {
-      const next = compareCivilAndTrueSolar(form);
+      const next = compareCivilAndTrueSolar(input);
+      setForm({ ...input });
       setComparison(next);
-      setBasis(form.timeBasis);
+      setBasis(input.timeBasis);
       setSelectedCycle(0);
       setError('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '排盘失败，请检查输入。');
+      setError(reason instanceof Error ? reason.message : '命盘载入失败，请检查输入。');
     }
+  }
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    loadInput(form);
   }
   async function copyJson() {
     await navigator.clipboard.writeText(json);
@@ -145,7 +152,7 @@ function App() {
 
   return (
     <main>
-      <header className="masthead"><div><p className="eyebrow">MING MIRROR · FOUNDATION ENGINE 0.3</p><h1>命镜</h1><p className="subtitle">公农历排盘 · 大运流年流月 · 十神藏干神煞 · 生克刑冲合害</p></div><div className="engine-badge"><i />确定性计算</div></header>
+      <header className="masthead"><div><p className="eyebrow">MING MIRROR · EXPLAINABLE BAZI WORKSTATION</p><h1>命镜</h1><p className="subtitle">命盘总报告 · 事业财富关系 · 合盘时间轴 · 专业证据审计</p></div><div className="engine-badge"><i />确定性计算</div></header>
 
       <section className="workspace">
         <aside className="input-panel panel">
@@ -173,8 +180,9 @@ function App() {
             <Field label="默认展示口径"><select value={form.timeBasis} onChange={(event) => update('timeBasis', event.target.value as BirthInput['timeBasis'])}><option value="true-solar">真太阳时</option><option value="civil">民用标准时间</option></select></Field>
             <div className="scope-note"><strong>底层口径</strong><p>农历输入先确定对应民用公历时刻，再做夏令时、经度和均时差修正。闰月或日期不存在时，系统通过回读核验拒绝静默归一化。</p></div>
             {error && <p className="error">{error}</p>}
-            <button className="primary" type="submit">生成基础全盘 <span>→</span></button>
+            <button className="primary" type="submit">生成完整命盘 <span>→</span></button>
           </form>
+          <ArchiveManager currentInput={form} onLoad={loadInput} />
         </aside>
 
         <section className="chart-panel panel">
@@ -193,21 +201,22 @@ function App() {
       </section>
 
       <FoundationExplorer chart={chart} />
+      <HourCandidateExplorer input={form} onUse={loadInput} />
 
       <section className="lower-grid">
         <section className="panel luck-panel">
-          <div className="section-heading compact"><span>05</span><div><h2>九步大运总览</h2><p>{chart.luck.forward ? '顺排' : '逆排'} · 出生后 {chart.luck.startText} 起运 · {chart.luck.startSolar}</p></div></div>
+          <div className="section-heading compact"><span>08</span><div><h2>九步大运总览</h2><p>{chart.luck.forward ? '顺排' : '逆排'} · 出生后 {chart.luck.startText} 起运 · {chart.luck.startSolar}</p></div></div>
           <div className="cycle-tabs" role="tablist">{chart.luck.cycles.map((item, index) => <button key={`${item.index}-${item.ganZhi}`} className={index === selectedCycle ? 'active' : ''} onClick={() => setSelectedCycle(index)} type="button"><small>{item.startAge}—{item.endAge}岁</small><b>{item.ganZhi}</b><span>{item.pillar.tenGod} · {item.pillar.growthStage}</span><span>{item.startYear}—{item.endYear}</span></button>)}</div>
           {cycle && <div className="annual-grid">{cycle.years.map((year) => <div key={year.year}><span>{year.year}</span><b>{year.ganZhi}</b><strong>{year.pillar.tenGod}</strong><small>{year.age}岁 · 空 {year.xunKong}</small></div>)}</div>}
         </section>
         <aside className="panel audit-panel">
-          <div className="section-heading compact"><span>06</span><div><h2>辅助盘项</h2><p>原始结构信息，不做吉凶解释</p></div></div>
+          <div className="section-heading compact"><span>09</span><div><h2>辅助盘项</h2><p>原始结构信息，不做吉凶解释</p></div></div>
           <dl className="aux-list"><div><dt>胎元</dt><dd>{chart.auxiliary.taiYuan}</dd></div><div><dt>胎息</dt><dd>{chart.auxiliary.taiXi}</dd></div><div><dt>命宫</dt><dd>{chart.auxiliary.mingGong}</dd></div><div><dt>身宫</dt><dd>{chart.auxiliary.shenGong}</dd></div></dl>
           <button className="secondary" type="button" onClick={copyJson}>{copied ? '已复制双盘数据' : '复制基础双盘 JSON'}</button>
           <p className="audit-footnote">原局、大运、流年、十神、藏干、神煞、时间修正与作用关系都进入同一审计结构；流月按选择即时生成。</p>
         </aside>
       </section>
-      <footer><span>命镜排盘内核 v0.3</span><span>由浅入深 · 基础先于旺衰 · 结论不得越层</span></footer>
+      <footer><span>命镜可解释八字工作站</span><span>简报 → 主题 → 专业审计 · 结论可追溯 · 不把模型当现实定律</span></footer>
     </main>
   );
 }

@@ -5,6 +5,8 @@ import './styles.css';
 import './foundation.css';
 import './report.css';
 import './career.css';
+import './product-suite.css';
+import './utility.css';
 import './dynamics.css';
 import './energy.css';
 import './energy-audit.css';
