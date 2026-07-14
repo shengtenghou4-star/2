@@ -5,6 +5,7 @@ import './styles.css';
 import './foundation.css';
 import './dynamics.css';
 import './energy.css';
+import './energy-audit.css';
 import './strength.css';
 import './interpretation.css';
 
