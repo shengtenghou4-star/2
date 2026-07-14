@@ -22,7 +22,7 @@ function stripCandidate(value: string): string {
 }
 
 function buildCandidate(input: BirthInput, hour: number, branch: string): Candidate {
-  const chartInput = { ...input, calendarType: 'solar' as const, leapMonth: false, hour, minute: 30 };
+  const chartInput: BirthInput = { ...input, hour, minute: 30 };
   const comparison = compareCivilAndTrueSolar(chartInput);
   const chart = chartInput.timeBasis === 'true-solar' ? comparison.trueSolar : comparison.civil;
   const bundle = buildNatalAnalysisBundle(chart);
@@ -80,7 +80,7 @@ export function HourCandidateExplorer({ input, onUse }: { input: BirthInput; onU
       <div className="hour-candidate-grid">
         {candidates.map((candidate) => <article key={candidate.branch}><header><span>{candidate.branch}时</span><b>{String(candidate.hour).padStart(2, '0')}:30</b></header><p>{candidate.pillars}</p><dl><div><dt>旺衰</dt><dd>{candidate.strength}</dd></div><div><dt>格局</dt><dd>{candidate.pattern}</dd></div><div><dt>主导</dt><dd>{candidate.dominant}</dd></div><div><dt>事业</dt><dd>{candidate.career}</dd></div></dl><button type="button" onClick={() => onUse(candidate.chartInput)}>采用此候选</button></article>)}
       </div>
-      <p className="hour-candidate-note">候选比较适合处理“只知道上午、下午或两个相邻时辰”的情况。真正校时仍应使用可核验人生节点做盲测，并保留多个候选，不应根据喜欢哪份报告来选时辰。</p>
+      <p className="hour-candidate-note">候选比较适合处理“只知道上午、下午或两个相邻时辰”的情况。农历输入会保持农历日期语义，只替换时刻。真正校时仍应使用可核验人生节点做盲测，并保留多个候选，不应根据喜欢哪份报告来选时辰。</p>
     </section>
   );
 }
