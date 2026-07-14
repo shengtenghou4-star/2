@@ -1,0 +1,62 @@
+.energy-explorer{margin-top:24px;padding-top:24px;border-top:1px solid rgba(205,176,126,.18)}
+.energy-summary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:14px 0}
+.energy-summary-grid article{border:1px solid rgba(205,176,126,.14);background:rgba(10,9,7,.18);padding:11px;min-width:0}
+.energy-summary-grid span,.energy-summary-grid b,.energy-summary-grid small{display:block}
+.energy-summary-grid span{font-size:8px;color:#8f887c}
+.energy-summary-grid b{font-family:"Songti SC","STSong",serif;color:#e7d4b5;font-size:18px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.energy-summary-grid small{font-size:7px;color:#7f796f;line-height:1.4;margin-top:5px}
+.energy-main-grid{display:grid;grid-template-columns:1.45fr .8fr;gap:12px}
+.energy-elements-panel,.energy-balance-panel,.energy-contribution-panel,.energy-method-panel{border:1px solid rgba(205,176,126,.14);background:rgba(10,9,7,.14);padding:13px}
+.energy-element-list{display:grid;gap:7px}
+.energy-element-row{border:1px solid rgba(205,176,126,.12);padding:9px;background:rgba(0,0,0,.12)}
+.energy-element-row>header{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}
+.energy-element-symbol{font-family:"Songti SC","STSong",serif;font-size:24px;color:#ded0b7;width:30px}
+.energy-element-row header div b,.energy-element-row header div small{display:block}
+.energy-element-row header div b{font-size:10px;color:#cdbda4}
+.energy-element-row header div small{font-size:7px;color:#817a70;margin-top:2px}
+.energy-element-row header strong{font-family:"Songti SC","STSong",serif;color:#ead7b7;font-size:17px}
+.energy-element-row header em{font-style:normal;font-size:8px;color:#8b857b;border:1px solid rgba(205,176,126,.12);padding:3px 5px}
+.energy-element-row header em.is-up{color:#9db492;border-color:rgba(132,169,122,.25)}
+.energy-element-row header em.is-down{color:#c58d79;border-color:rgba(199,112,89,.25)}
+.energy-bar{height:7px;background:rgba(255,255,255,.035);margin:8px 0;overflow:hidden}
+.energy-bar i{display:block;height:100%;background:linear-gradient(90deg,rgba(205,176,126,.4),rgba(233,212,175,.85))}
+.element-wood .energy-bar i{background:linear-gradient(90deg,rgba(106,143,91,.4),rgba(142,181,123,.9))}
+.element-fire .energy-bar i{background:linear-gradient(90deg,rgba(177,83,62,.42),rgba(216,119,91,.9))}
+.element-earth .energy-bar i{background:linear-gradient(90deg,rgba(164,116,69,.42),rgba(205,157,101,.9))}
+.element-metal .energy-bar i{background:linear-gradient(90deg,rgba(161,169,168,.42),rgba(218,220,217,.88))}
+.element-water .energy-bar i{background:linear-gradient(90deg,rgba(68,116,139,.42),rgba(111,159,181,.9))}
+.energy-row-ledger{display:flex;gap:5px;flex-wrap:wrap}
+.energy-row-ledger span{font-size:7px;color:#8d8578;border:1px solid rgba(205,176,126,.11);padding:3px 5px}
+.energy-family-ledger{display:grid;gap:6px}
+.energy-family-ledger p{display:flex;justify-content:space-between;gap:8px;margin:0;border-bottom:1px solid rgba(205,176,126,.1);padding:8px 0}
+.energy-family-ledger span{font-size:9px;color:#91897c}
+.energy-family-ledger b{font-family:"Songti SC","STSong",serif;color:#dfcdb0;font-size:14px}
+.energy-support-bar{display:flex;height:28px;margin:12px 0;background:rgba(255,255,255,.025);overflow:hidden}
+.energy-support-bar i,.energy-support-bar b{display:flex;align-items:center;justify-content:center;min-width:0}
+.energy-support-bar i{font-style:normal;background:rgba(117,154,109,.3);color:#bfd0b8}
+.energy-support-bar b{flex:1;background:rgba(183,95,74,.22);color:#d8b6aa;font-weight:500}
+.energy-support-bar span{font-size:8px;white-space:nowrap;padding:0 6px}
+.energy-balance-note{font-size:8px;color:#837c71;line-height:1.55;margin:0}
+.energy-contribution-panel{margin-top:12px}
+.energy-contribution-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.energy-contribution-list article{border:1px solid rgba(205,176,126,.12);background:rgba(0,0,0,.12);padding:9px;min-width:0}
+.energy-contribution-list article.is-contested{border-color:rgba(200,145,93,.3);background:rgba(174,111,57,.04)}
+.energy-contribution-list header{display:grid;grid-template-columns:auto 1fr auto;gap:7px;align-items:center}
+.energy-contribution-list header span{font-size:7px;color:#817b70}
+.energy-contribution-list header b{font-size:9px;color:#d2c2aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.energy-contribution-list header strong{font-family:"Songti SC","STSong",serif;color:#e4cfaa;font-size:13px}
+.energy-contribution-list p{font-size:7px;color:#8a8276;margin:7px 0 5px}
+.energy-contribution-list code{display:block;font-size:7px;color:#a39176;background:rgba(0,0,0,.2);padding:5px;overflow-wrap:anywhere}
+.energy-contribution-list small{display:block;font-size:7px;color:#746e65;line-height:1.45;margin-top:5px}
+.energy-method-panel{margin-top:12px}
+.energy-method-panel>code{display:block;color:#cbb28a;background:rgba(0,0,0,.2);border:1px solid rgba(205,176,126,.1);padding:10px;font-size:8px;line-height:1.6;white-space:normal}
+.energy-method-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+.energy-method-steps p{display:grid;grid-template-columns:auto 1fr;gap:7px;margin:0;border:1px solid rgba(205,176,126,.1);padding:8px;background:rgba(0,0,0,.1)}
+.energy-method-steps b{display:grid;place-items:center;width:18px;height:18px;border:1px solid rgba(205,176,126,.25);color:#c4a46e;font-size:8px}
+.energy-method-steps span{font-size:8px;color:#878074;line-height:1.5}
+.energy-notes{margin-top:9px;border-left:2px solid rgba(205,176,126,.5);padding:7px 10px;background:rgba(205,176,126,.04)}
+.energy-notes p{font-size:7px;color:#817a70;line-height:1.5;margin:3px 0}
+.energy-delta-note{font-size:8px;color:#948b7e;margin:10px 0 0;line-height:1.55}
+@media(max-width:1200px){.energy-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.energy-contribution-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.energy-main-grid{grid-template-columns:1fr}.energy-method-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.energy-summary-grid,.energy-contribution-list,.energy-method-steps{grid-template-columns:1fr}.energy-element-row>header{grid-template-columns:auto 1fr auto}.energy-element-row header em{grid-column:2/4;justify-self:start}}

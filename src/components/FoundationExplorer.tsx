@@ -3,6 +3,7 @@ import type { BaziChart } from '../lib/bazi';
 import { buildLuckContext } from '../lib/context';
 import type { TemporalPillar } from '../lib/timeline';
 import { DynamicsExplorer } from './DynamicsExplorer';
+import { EnergyExplorer } from './EnergyExplorer';
 import { EvidenceExplorer } from './EvidenceExplorer';
 import { PatternClimateExplorer } from './PatternClimateExplorer';
 import { StrengthExplorer } from './StrengthExplorer';
@@ -116,10 +117,11 @@ export function FoundationExplorer({ chart }: { chart: BaziChart }) {
 
       <EvidenceExplorer chart={chart} context={context} />
       <DynamicsExplorer chart={chart} context={context} />
+      <EnergyExplorer chart={chart} context={context} />
       <StrengthExplorer chart={chart} context={context} />
       <PatternClimateExplorer chart={chart} context={context} />
 
-      <p className="foundation-boundary">格局、调候和扶抑现已分轨输出。当前仍只允许候选与冲突审计，不输出最终用神、喜忌或现实事件断语。</p>
+      <p className="foundation-boundary">能量百分比属于版本化模型量化；格局、调候和扶抑仍分轨输出。当前不输出最终用神、喜忌或现实事件断语。</p>
     </section>
   );
 }
