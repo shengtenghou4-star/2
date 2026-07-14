@@ -2,7 +2,6 @@ import type { AnalysisBundle } from './analysis-bundle';
 import type { BaziChart } from './bazi';
 import {
   buildCompatibilityAssessment as buildBaseCompatibilityAssessment,
-  buildRelationshipProfile,
   isValidCompatibility as isBaseValidCompatibility,
   type CompatibilityAssessment,
   type CompatibilityAxis,
@@ -66,7 +65,7 @@ export function buildCompatibilityAssessment(
   const rawAttraction = base.axes.find((item) => item.id === 'attraction')!;
   const auditedCeiling = 48 + positive * 7 - conflict * 5 + Math.min(6, positive * 1.5);
   const attractionScore = Math.min(rawAttraction.score, auditedCeiling);
-  let axes = replaceAxis(
+  const axes = replaceAxis(
     base.axes,
     'attraction',
     attractionScore,
@@ -77,7 +76,6 @@ export function buildCompatibilityAssessment(
   const strengths = axes.filter((item) => item.score >= 65).slice(0, 3).map((item) => `${item.name}较强：${item.summary}`);
   const tensions = axes.filter((item) => item.score < 58).slice(0, 3).map((item) => `${item.name}需要主动经营：${item.summary}`);
   if (conflict) tensions.push(`去重后仍有${conflict}种冲、刑、害或破结构，需要落实到现实边界、责任和资源议题。`);
-  axes = [...axes];
 
   return {
     ...base,
