@@ -63,10 +63,11 @@ describe('energy model conservation', () => {
     });
   });
 
-  it('normalizes five-element percentages to exactly 100 percent', () => {
+  it('normalizes five-element percentages to exactly 10000 basis points', () => {
     const natal = natalNodes(['乙酉', '戊子', '辛巳', '壬辰']);
     const result = snapshot(natal);
-    expect(result.elements.reduce((sum, item) => sum + item.percentage, 0)).toBe(100);
+    expect(result.elements.reduce((sum, item) => sum + item.basisPoints, 0)).toBe(10_000);
+    expect(result.balance.supportBasisPoints + result.balance.oppositionBasisPoints).toBe(10_000);
     expect(isValidEnergySnapshot(result)).toBe(true);
   });
 });
