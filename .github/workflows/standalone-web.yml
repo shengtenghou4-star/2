@@ -1,6 +1,13 @@
 name: publish-standalone-web
 
 on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/build-standalone.mjs'
+      - '.github/workflows/standalone-web.yml'
+      - 'package.json'
+      - 'vite.config.ts'
   push:
     branches: [main]
   workflow_dispatch:
@@ -9,11 +16,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: standalone-web
+  group: standalone-web-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-publish:
+  build-smoke-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +31,44 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: node scripts/build-standalone.mjs
+
+      - name: Render the standalone page in Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser" || { echo 'No Chrome/Chromium executable on runner'; exit 1; }
+
+          python3 -m http.server 4173 --directory standalone >/tmp/mingjing-http.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          timeout 150s "$browser" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --run-all-compositor-stages-before-draw \
+            --virtual-time-budget=90000 \
+            --dump-dom \
+            http://127.0.0.1:4173/index.html > /tmp/mingjing-rendered.html
+
+          grep -q '出生信息' /tmp/mingjing-rendered.html
+          grep -q '一分钟简报' /tmp/mingjing-rendered.html
+          grep -q '命盘档案' /tmp/mingjing-rendered.html
+
+          printf '{"status":"ok","source":"%s","checks":["出生信息","一分钟简报","命盘档案"]}\n' "$GITHUB_SHA" > standalone/smoke.json
+          echo 'Browser rendering smoke test: passed'
+
       - name: Publish one-file app branch
+        if: github.event_name != 'pull_request'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,7 +78,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b standalone-web
-          git add index.html .nojekyll
-          git commit -m "publish standalone 命镜 web app"
+          git add index.html .nojekyll smoke.json
+          git commit -m "publish browser-verified standalone 命镜 web app"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin standalone-web
