@@ -10,6 +10,11 @@ on:
       - 'src/components/PatternClimateExplorer.tsx'
       - 'src/components/CoreReportExplorer.tsx'
       - 'src/components/CareerExplorer.tsx'
+      - 'src/components/ProductSuite.tsx'
+      - 'src/components/ArchiveManager.tsx'
+      - 'src/components/HourCandidateExplorer.tsx'
+      - 'src/components/FoundationExplorer.tsx'
+      - 'src/App.tsx'
       - 'package.json'
       - 'vitest.domain.config.ts'
       - '.github/workflows/domain-audit.yml'
@@ -17,7 +22,7 @@ on:
 jobs:
   exhaustive-domain:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
