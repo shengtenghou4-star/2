@@ -1,6 +1,5 @@
 import {
   BRANCHES,
-  STEM_META,
   controlledElement,
   controllerElement,
   generatedElement,
@@ -104,6 +103,7 @@ export interface ElementEnergyRow {
   family: TenGodFamily;
   rawUnits: number;
   effectiveUnits: number;
+  basisPoints: number;
   percentage: number;
   visibleUnits: number;
   hiddenUnits: number;
@@ -121,6 +121,8 @@ export interface EnergyBalance {
   officerUnits: number;
   supportUnits: number;
   oppositionUnits: number;
+  supportBasisPoints: number;
+  oppositionBasisPoints: number;
   supportPercent: number;
   oppositionPercent: number;
 }
@@ -160,6 +162,11 @@ export interface EnergyAssessment {
   current: EnergySnapshot;
   delta: EnergyDeltaRow[];
   notes: string[];
+}
+
+interface NormalizedShare {
+  basisPoints: number;
+  percentage: number;
 }
 
 const ELEMENTS: Element[] = ['木', '火', '土', '金', '水'];
@@ -302,14 +309,20 @@ function buildContribution(
   };
 }
 
-function normalizePercentages(rows: Array<{ element: Element; units: number }>): Record<Element, number> {
+function normalizePercentages(rows: Array<{ element: Element; units: number }>): Record<Element, NormalizedShare> {
   const total = rows.reduce((sum, item) => sum + item.units, 0);
   if (!(total > 0)) throw new Error('五行有效能量总量必须大于零。');
-  const percentages = rows.map((item) => ({ element: item.element, value: ROUND((item.units / total) * 100, 2) }));
-  const residual = ROUND(100 - percentages.reduce((sum, item) => sum + item.value, 0), 2);
-  const largest = percentages.reduce((best, item, index, array) => item.value > array[best].value ? index : best, 0);
-  percentages[largest].value = ROUND(percentages[largest].value + residual, 2);
-  return Object.fromEntries(percentages.map((item) => [item.element, item.value])) as Record<Element, number>;
+  const shares = rows.map((item) => ({
+    element: item.element,
+    basisPoints: Math.round((item.units / total) * 10_000),
+  }));
+  const residual = 10_000 - shares.reduce((sum, item) => sum + item.basisPoints, 0);
+  const largest = shares.reduce((best, item, index, array) => item.basisPoints > array[best].basisPoints ? index : best, 0);
+  shares[largest].basisPoints += residual;
+  return Object.fromEntries(shares.map((item) => [item.element, {
+    basisPoints: item.basisPoints,
+    percentage: item.basisPoints / 100,
+  }])) as Record<Element, NormalizedShare>;
 }
 
 function buildBalance(dayMaster: Element, rows: ElementEnergyRow[]): EnergyBalance {
@@ -322,6 +335,8 @@ function buildBalance(dayMaster: Element, rows: ElementEnergyRow[]): EnergyBalan
   const supportUnits = sameElementUnits + resourceUnits;
   const oppositionUnits = outputUnits + wealthUnits + officerUnits;
   const total = supportUnits + oppositionUnits;
+  const supportBasisPoints = total > 0 ? Math.round((supportUnits / total) * 10_000) : 0;
+  const oppositionBasisPoints = total > 0 ? 10_000 - supportBasisPoints : 0;
   return {
     dayMasterElement: dayMaster,
     sameElementUnits: ROUND(sameElementUnits),
@@ -331,8 +346,10 @@ function buildBalance(dayMaster: Element, rows: ElementEnergyRow[]): EnergyBalan
     officerUnits: ROUND(officerUnits),
     supportUnits: ROUND(supportUnits),
     oppositionUnits: ROUND(oppositionUnits),
-    supportPercent: total > 0 ? ROUND((supportUnits / total) * 100, 2) : 0,
-    oppositionPercent: total > 0 ? ROUND((oppositionUnits / total) * 100, 2) : 0,
+    supportBasisPoints,
+    oppositionBasisPoints,
+    supportPercent: supportBasisPoints / 100,
+    oppositionPercent: oppositionBasisPoints / 100,
   };
 }
 
@@ -399,7 +416,8 @@ export function buildEnergySnapshot(
     family: familyOfElement(dayMaster.stemElement, item.element),
     rawUnits: ROUND(item.raw),
     effectiveUnits: ROUND(item.units),
-    percentage: percentages[item.element],
+    basisPoints: percentages[item.element].basisPoints,
+    percentage: percentages[item.element].percentage,
     visibleUnits: ROUND(item.visible),
     hiddenUnits: ROUND(item.hidden),
     natalUnits: ROUND(item.natal),
@@ -411,7 +429,7 @@ export function buildEnergySnapshot(
   const totalRawUnits = contributions.reduce((sum, item) => sum + item.rawUnits, 0);
   const totalEffectiveUnits = contributions.reduce((sum, item) => sum + item.effectiveUnits, 0);
   const contestedUnits = contributions.filter((item) => item.contested).reduce((sum, item) => sum + item.effectiveUnits, 0);
-  const shares = elements.map((item) => item.percentage / 100);
+  const shares = elements.map((item) => item.basisPoints / 10_000);
   const concentrationIndex = shares.reduce((sum, value) => sum + value ** 2, 0);
   const balanceScore = Math.max(0, Math.min(100, ((1 - concentrationIndex) / 0.8) * 100));
   const sorted = [...elements].sort((left, right) => right.effectiveUnits - left.effectiveUnits);
@@ -435,6 +453,7 @@ export function buildEnergySnapshot(
     notes: [
       `${ENERGY_MODEL_VERSION} 是命镜内部的可复算模型单位，不是物理能量，也不是传统命理各流派共同承认的唯一权重。`,
       '每柱固定100结构单位：天干40、地支60；地支藏干按一藏100%，二藏70/30，三藏60/25/15分仓。',
+      '五行构成先保存为整数基点，总和严格为10000bp，再显示为两位小数百分比。',
       '月令倍率采用旺1.50、相1.25、休1.00、囚0.78、死0.60；所有常数均版本化，改动必须触发回归测试。',
       '合冲刑害只折算“当前可用性”，不直接宣告合化、拔根或吉凶；受影响部分单列为争议能量。',
       '得根与透干只作用于对应显干或藏干的激活倍率，避免把同一份地支能量重复登记为独立能量。',
@@ -478,10 +497,12 @@ export function buildEnergyAssessment(
 }
 
 export function isValidEnergySnapshot(snapshot: EnergySnapshot): boolean {
-  const percentageSum = ROUND(snapshot.elements.reduce((sum, item) => sum + item.percentage, 0), 2);
+  const basisPointSum = snapshot.elements.reduce((sum, item) => sum + item.basisPoints, 0);
   return (
     snapshot.elements.length === 5 &&
-    percentageSum === 100 &&
+    basisPointSum === 10_000 &&
+    snapshot.elements.every((item) => item.percentage === item.basisPoints / 100) &&
+    snapshot.balance.supportBasisPoints + snapshot.balance.oppositionBasisPoints === 10_000 &&
     snapshot.totalEffectiveUnits > 0 &&
     snapshot.contributions.length > 0 &&
     snapshot.contributions.every((item) =>
@@ -490,8 +511,8 @@ export function isValidEnergySnapshot(snapshot: EnergySnapshot): boolean {
       Number.isFinite(item.effectiveUnits) &&
       item.baseUnits >= 0 &&
       item.rawUnits >= 0 &&
-      item.effectiveUnits >= 0,
-    ) &&
-    BRANCHES.includes(snapshot.contributions.find((item) => item.branch)?.branch as typeof BRANCHES[number] ?? '子')
+      item.effectiveUnits >= 0 &&
+      (!item.branch || BRANCHES.includes(item.branch as typeof BRANCHES[number])),
+    )
   );
 }
