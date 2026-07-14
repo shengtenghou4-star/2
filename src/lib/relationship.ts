@@ -160,10 +160,21 @@ function crossRelations(left: BaziChart, right: BaziChart): ChartRelation[] {
   });
 }
 
+function relationStructureKey(relation: ChartRelation): string {
+  return `${relation.type}:${relation.resultElement ?? ''}:${relation.members.map((item) => item.char).sort().join('')}`;
+}
+
 function relationCounts(relations: ChartRelation[]) {
-  const positive = relations.filter((item) => ['五合', '六合', '三合', '三会', '半合', '拱合'].includes(item.type));
-  const conflict = relations.filter((item) => ['相冲', '六冲', '六害', '六破', '相刑', '三刑', '自刑'].includes(item.type));
-  return { positive, conflict };
+  const seen = new Set<string>();
+  const unique = relations.filter((item) => {
+    const key = relationStructureKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const positive = unique.filter((item) => ['五合', '六合', '三合', '三会', '半合', '拱合'].includes(item.type));
+  const conflict = unique.filter((item) => ['相冲', '六冲', '六害', '六破', '相刑', '三刑', '自刑'].includes(item.type));
+  return { positive, conflict, unique };
 }
 
 export function buildCompatibilityAssessment(
@@ -173,7 +184,7 @@ export function buildCompatibilityAssessment(
   rightBundle: AnalysisBundle,
 ): CompatibilityAssessment {
   const relations = crossRelations(leftChart, rightChart);
-  const { positive, conflict } = relationCounts(relations);
+  const { positive, conflict, unique } = relationCounts(relations);
   const interactions = buildElementInteractions([...prefixNodes(leftChart, 'A'), ...prefixNodes(rightChart, 'B')]);
   const crossInteractions = interactions.filter((item) => item.left.id.startsWith('A:') !== item.right.id.startsWith('A:'));
   const generating = crossInteractions.filter((item) => item.type === '相生').length;
@@ -187,24 +198,24 @@ export function buildCompatibilityAssessment(
 
   const evidenceBase: RelationshipEvidence[] = relations.slice(0, 5).map((item) => ({ id: `compat:${item.id}`, label: item.name, detail: item.note }));
   const axes: CompatibilityAxis[] = [
-    { id: 'attraction', name: '吸引与互相注意', score: round(clamp(48 + positive.length * 8 - conflict.length * 3 + same * 0.5)), summary: '合与同类结构提高互相注意，但吸引不等于长期稳定。', evidence: evidenceBase },
+    { id: 'attraction', name: '吸引与互相注意', score: round(clamp(48 + positive.length * 8 - conflict.length * 3 + Math.min(8, same * 0.25))), summary: `合与同类结构提高互相注意，但吸引不等于长期稳定。评分按${unique.length}种唯一跨盘结构计算，重复位置只保留为证据。`, evidence: evidenceBase },
     { id: 'communication', name: '沟通可译性', score: round(clamp(78 - expressionGap * 0.65 + generating * 0.55 - controlling * 0.25)), summary: '比较双方表达强度、理解方式与五行传递是否容易形成翻译桥梁。', evidence: [{ id: 'compat:expression-gap', label: `表达差${expressionGap.toFixed(2)}`, detail: '差距越大，越需要明确沟通节奏。', value: expressionGap }] },
     { id: 'stability', name: '稳定与承诺', score: round(clamp(76 - securityGap * 0.58 + positive.length * 3 - conflict.length * 6)), summary: '比较双方稳定需求是否接近，以及跨盘冲害刑是否增加关系维护成本。', evidence: [{ id: 'compat:security-gap', label: `安全需求差${securityGap.toFixed(2)}`, detail: '差距较大时，双方对承诺和空间的解释可能不同。', value: securityGap }] },
-    { id: 'autonomy', name: '自主与边界', score: round(clamp(80 - boundaryGap * 0.62 - conflict.length * 3 + same * 0.35)), summary: '衡量双方能否在亲密与独立之间形成不靠控制维持的边界。', evidence: [{ id: 'compat:boundary-gap', label: `边界差${boundaryGap.toFixed(2)}`, detail: '差距越大，越需要提前约定联系频率、决策权和个人空间。', value: boundaryGap }] },
+    { id: 'autonomy', name: '自主与边界', score: round(clamp(80 - boundaryGap * 0.62 - conflict.length * 3 + Math.min(8, same * 0.18))), summary: '衡量双方能否在亲密与独立之间形成不靠控制维持的边界。', evidence: [{ id: 'compat:boundary-gap', label: `边界差${boundaryGap.toFixed(2)}`, detail: '差距越大，越需要提前约定联系频率、决策权和个人空间。', value: boundaryGap }] },
     { id: 'cooperation', name: '现实协作', score: round(clamp(52 + generating * 0.9 + positive.length * 4 - controlling * 0.45 - conflict.length * 4)), summary: '衡量资源、任务和长期生活安排能否形成有效协作。', evidence: [{ id: 'compat:interactions', label: `相生${generating}·相克${controlling}·同类${same}`, detail: '只记录结构互动，不直接判吉凶。' }] },
   ].sort((a, b) => b.score - a.score);
   const average = axes.reduce((sum, item) => sum + item.score, 0) / axes.length;
   const volatility = conflict.length * 4 + Math.max(expressionGap, securityGap, boundaryGap) * 0.18;
-  const confidenceScore = round(clamp(average - volatility * 0.22 + Math.min(10, relations.length)));
+  const confidenceScore = round(clamp(average - volatility * 0.22 + Math.min(8, unique.length)));
   const strengths = axes.filter((item) => item.score >= 65).slice(0, 3).map((item) => `${item.name}较强：${item.summary}`);
   const tensions = axes.filter((item) => item.score < 58).slice(0, 3).map((item) => `${item.name}需要主动经营：${item.summary}`);
-  if (conflict.length) tensions.push(`跨盘检测到${conflict.length}条冲、刑、害或破，冲突重点应落实到具体角色与现实议题，而不是只贴“不合”标签。`);
+  if (conflict.length) tensions.push(`去重后检测到${conflict.length}种冲、刑、害或破，冲突重点应落实到具体角色与现实议题，而不是只贴“不合”标签。`);
 
   return {
     version: RELATIONSHIP_MODEL_VERSION,
     fingerprint: hash([leftChart.pillars.map((item) => item.ganZhi).join(''), rightChart.pillars.map((item) => item.ganZhi).join(''), axes.map((item) => `${item.id}${item.score}`).join('')]),
     headline: `${axes[0].name}是双方最强连接，${axes[axes.length - 1].name}是首要经营课题`,
-    summary: `两张盘不是“合或不合”的二元判断。当前平均匹配度${average.toFixed(2)}，真正决定关系质量的是高分连接能否转化为日常行为，以及低分轴是否建立明确协议。`,
+    summary: `两张盘不是“合或不合”的二元判断。当前五轴平均分${average.toFixed(2)}，真正决定关系质量的是高分连接能否转化为日常行为，以及低分轴是否建立明确协议。`,
     confidence: confidence(confidenceScore),
     confidenceScore,
     axes,
@@ -218,6 +229,7 @@ export function buildCompatibilityAssessment(
     crossRelations: relations,
     notes: [
       '合盘不使用生肖一票否决，也不把五行互补视为天生一对。',
+      `评分按${unique.length}种唯一跨盘结构计算；完整账本保留全部${relations.length}个位置落点。`,
       '模型只比较结构机制；真实关系还取决于安全、尊重、沟通、共同目标和是否存在控制或伤害。',
     ],
   };
